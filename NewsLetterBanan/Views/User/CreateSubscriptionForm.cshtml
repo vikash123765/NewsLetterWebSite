@@ -1,0 +1,36 @@
+﻿@model Subscription
+
+<form method="post" action="/User/CreateSubscriptionForm">
+    <div class="form-group">
+        <label for="SubscriptionTypeId">Choose Subscription Type:</label>
+        <select id="SubscriptionTypeId" name="SubscriptionTypeId" class="form-control">
+            @foreach (var type in ViewBag.SubscriptionTypes as SelectList)
+            {
+                <option value="@type.Value">@type.Text</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="CreditCardNumber">Credit Card Number:</label>
+        <input type="text" id="CreditCardNumber" name="CreditCardNumber" class="form-control" required placeholder="Enter 16-digit credit card number" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create Subscription</button>
+</form>
+
+
+<script>
+    document.getElementById("subscriptionForm").addEventListener("submit", function(event) {
+        let creditCardInput = document.getElementById("CreditCardNumber").value.trim();
+
+        // Remove spaces
+        creditCardInput = creditCardInput.replace(/\s+/g, '');
+
+        // Simple credit card validation: 16 digits, numeric only
+        if (!/^\d{16}$/.test(creditCardInput)) {
+            alert("Incorrect credit card info. Please try again.");
+            event.preventDefault(); // Prevent form submission
+        }
+    });
+</script>

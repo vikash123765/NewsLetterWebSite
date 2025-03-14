@@ -1,0 +1,137 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+        
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - NewsLetterBanan</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/NewsLetterBanan.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">NewsLetterBanan</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="About">About</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Article" asp-action="GetAllArticles">Articles</a>
+                        </li>
+
+                        @if (User.IsInRole("RegUser"))
+                        {
+
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="MyPage">My page</a>
+                            </li>
+
+                        }
+
+                        @if (User.IsInRole("Editor"))
+
+                        {
+
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Editor" asp-action="ManageArticles">Editor page</a>
+                            </li>
+
+                        }
+                        @if (User.IsInRole("Journalist"))
+
+
+
+                        {
+
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Journalist" asp-action="JournalistPage">Journalist Page</a>
+                            </li>
+
+                        }
+                        @if (User.IsInRole("Admin"))
+
+                        {
+                            <li class="nav-item">
+
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Dashboard">Admin</a>
+
+                            </li>
+
+                        }
+                     
+                        @if (User.Identity.IsAuthenticated && (User.IsInRole("Editor") || User.IsInRole("Admin") || User.IsInRole("Journalist")))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Message" asp-action="Inbox">
+                                    📥 Inbox
+                                    <span id="unreadCount" class="badge bg-danger" style="display: none;"></span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Message" asp-action="Sent">📤 Sent</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Message" asp-action="Send">✉️ Send Message</a>
+                            </li>
+                        }
+
+
+                    </ul>
+                    <partial name="_LoginPartial" />
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2025 - NewsLetterBanan - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+
+
+<script>
+    async function fetchUnreadMessagesCount() {
+        try {
+            const response = await fetch('/Messages/UnreadMessagesCount');
+            const count = await response.json();
+
+            const unreadBadge = document.getElementById("unreadCount");
+            if (count > 0) {
+                unreadBadge.textContent = count;
+                unreadBadge.style.display = "inline-block";
+            } else {
+                unreadBadge.style.display = "none";
+            }
+        } catch (error) {
+            console.error("Error fetching unread messages count:", error);
+        }
+    }
+
+    fetchUnreadMessagesCount();
+    setInterval(fetchUnreadMessagesCount, 60000); // Refresh every 60 seconds
+</script>

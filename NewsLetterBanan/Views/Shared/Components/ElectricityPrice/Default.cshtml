@@ -1,0 +1,37 @@
+﻿@using NewsLetterBanan.Models.API
+<h2>Electricity Prices</h2>
+
+@model NewsLetterBanan.Models.API.ElectricityPricesViewModel
+
+<p>Date: @Model?.Date</p>
+
+@foreach (var region in new[] { "SE1", "SE2", "SE3", "SE4" })
+{
+    <h3>@region</h3>
+    var prices = Model.GetType().GetProperty(region)?.GetValue(Model) as List<ElectricityPrice>;
+
+    if (prices != null && prices.Any())
+    {
+        <table border="1">
+            <tr>
+                <th>Hour</th>
+                <th>Price EUR</th>
+                <th>Price SEK</th>
+                <th>KMeans</th>
+            </tr>
+            @foreach (var item in prices)
+            {
+                <tr>
+                    <td>@item.Hour</td>
+                    <td>@item.PriceEur</td>
+                    <td>@item.PriceSek</td>
+                    <td>@item.KMeans</td>
+                </tr>
+            }
+        </table>
+    }
+    else
+    {
+        <p>No data available for @region.</p>
+    }
+}

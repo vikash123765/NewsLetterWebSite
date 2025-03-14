@@ -1,0 +1,83 @@
+﻿@model List<NewsLetterBanan.Data.Inbox>
+
+<div class="container my-4">
+    <h2 class="mb-4">Inbox</h2>
+
+    <div class="d-none d-md-block">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover shadow-sm">
+                <thead class="thead-dark">
+                    <tr>
+                        <th class="text-center">From</th>
+                        <th class="text-center">Message</th>
+                        <th class="text-center">Received At</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var inbox in Model)
+                    {
+                        <tr class="@(inbox.IsRead ? "" : "table-warning")">
+                            <td class="align-middle">@inbox.Message.Sender.UserName</td>
+                            <td class="align-middle">@inbox.Message.Content</td>
+                            <td class="align-middle text-center">@inbox.Message.Timestamp.ToString("g")</td>
+                            <td class="align-middle text-center">
+                                @if (!inbox.IsRead)
+                                {
+                                    <form method="post" asp-action="MarkAsRead" class="d-inline">
+                                        <input type="hidden" name="inboxId" value="@inbox.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-success">Mark as Read</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-success">Read</span>
+                                }
+                            </td>
+                            <td class="align-middle text-center">
+                                <form method="post" asp-action="DeleteInboxMessage" class="d-inline">
+                                    <input type="hidden" name="inboxId" value="@inbox.Id" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">🗑️ Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Mobile-friendly Cards -->
+    <div class="d-md-none">
+        @foreach (var inbox in Model)
+        {
+            <div class="card mb-3 @(inbox.IsRead ? "" : "border-primary")">
+                <div class="card-body">
+                    <h5 class="card-title">@inbox.Message.Sender.UserName</h5>
+                    <p class="card-text"><strong>Message:</strong> @inbox.Message.Content</p>
+                    <p class="card-text"><strong>Received At:</strong> @inbox.Message.Timestamp.ToString("g")</p>
+
+                    <div class="d-flex justify-content-between">
+                        @if (!inbox.IsRead)
+                        {
+                            <form method="post" asp-action="MarkAsRead">
+                                <input type="hidden" name="inboxId" value="@inbox.Id" />
+                                <button type="submit" class="btn btn-success btn-sm">Mark as Read</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Read</span>
+                        }
+
+                        <form method="post" asp-action="DeleteInboxMessage">
+                            <input type="hidden" name="inboxId" value="@inbox.Id" />
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

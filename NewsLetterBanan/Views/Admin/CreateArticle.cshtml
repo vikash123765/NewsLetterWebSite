@@ -1,0 +1,139 @@
+﻿@model NewsLetterBanan.Models.ViewModels.CreateArticleViewModel
+
+<form asp-action="CreateArticle" method="post">
+    <div class="form-group">
+        <label asp-for="Headline"></label>
+        <input asp-for="Headline" class="form-control" />
+        <span asp-validation-for="Headline" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Content"></label>
+        <textarea asp-for="Content" class="form-control"></textarea>
+        <span asp-validation-for="Content" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="ContentSummary"></label>
+        <textarea asp-for="ContentSummary" class="form-control"></textarea>
+        <span asp-validation-for="ContentSummary" class="text-danger"></span>
+    </div>
+
+    <!-- Images Fields -->
+    <div>
+        <label asp-for="Titles"></label>
+        <input asp-for="Titles" class="form-control" />
+        <span asp-validation-for="Titles" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label asp-for="ImgDescriptions"></label>
+        <input asp-for="ImgDescriptions" class="form-control" />
+        <span asp-validation-for="ImgDescriptions" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label asp-for="ImgSourceURLs"></label>
+        <input asp-for="ImgSourceURLs" class="form-control" />
+        <span asp-validation-for="ImgSourceURLs" class="text-danger"></span>
+    </div>
+
+    <div class="form-group form-check">
+        <input asp-for="Exclusive" class="form-check-input" />
+        <label asp-for="Exclusive" class="form-check-label"></label>
+    </div>
+
+    <div>
+        <label asp-for="TakenBys"></label>
+        <input asp-for="TakenBys" class="form-control" />
+        <span asp-validation-for="TakenBys" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label asp-for="Licenses"></label>
+        <input asp-for="Licenses" class="form-control" />
+        <span asp-validation-for="Licenses" class="text-danger"></span>
+    </div>
+
+    <!-- Tags Section -->
+    <div>
+        <label for="TagSelect">Select Tags</label>
+        <select id="TagSelect" multiple="multiple">
+            @foreach (var tag in ViewBag.Tags)
+            {
+                <option value="@tag.TagName">@tag.TagName</option>
+            }
+        </select>  
+    </div>
+
+    <div>
+        <label asp-for="TagNames"></label>
+        <input asp-for="TagNames" class="form-control" />
+        <span asp-validation-for="TagNames" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label asp-for="TagDescriptions"></label>
+        <input asp-for="TagDescriptions" class="form-control" />
+        <span asp-validation-for="TagDescriptions" class="text-danger"></span>
+    </div>
+
+    <label for="CategorySelect">Select Categories</label>
+    <select id="CategorySelect" name="CategorySelect" multiple="multiple" class="form-control">
+        @if (ViewBag.Categories != null)
+        {
+            @foreach (var category in ViewBag.Categories)
+            {
+                <option value="@category">@category</option>
+            }
+        }
+        else
+        {
+            <option>No categories available</option>
+        }
+    </select>
+
+    <!-- Categories Input Fields -->
+    <div>
+        <label asp-for="CategoryNames"></label>
+        <input asp-for="CategoryNames" class="form-control" />
+        <span asp-validation-for="CategoryNames" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label asp-for="CategoryDescriptions"></label>
+        <input asp-for="CategoryDescriptions" class="form-control" />
+        <span asp-validation-for="CategoryDescriptions" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="SourceURL"></label>
+        <input asp-for="SourceURL" class="form-control" />
+        <span asp-validation-for="SourceURL" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="IsEditorsChoice"></label>
+        <input asp-for="IsEditorsChoice" class="form-check-input" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="IsApproved"></label>
+        <input asp-for="IsApproved" class="form-check-input" />
+    </div>
+    <div class="form-group">
+        <label asp-for="IsArchived"></label>
+        <input asp-for="IsArchived" class="form-check-input" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="CommentsOnOff"></label>
+        <input asp-for="CommentsOnOff" class="form-check-input" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create Article</button>
+</form>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

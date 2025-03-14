@@ -1,0 +1,16 @@
+﻿@model NewsLetterBanan.Data.Message
+
+<h2>Edit Message</h2>
+
+<form method="post" asp-action="EditMessage">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="form-group">
+        <label for="Content">Message Content:</label>
+        <textarea asp-for="Content" class="form-control" required></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-success">Save Changes</button>
+    <a asp-action="Sent" class="btn btn-secondary">Cancel</a>
+</form>
+

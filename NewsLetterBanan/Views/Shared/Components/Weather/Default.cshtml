@@ -1,0 +1,19 @@
+﻿@model NewsLetterBanan.Models.API.WeatherForecast
+
+@if (Model != null)
+{
+    <div class="card mt-4">
+        <div class="card-body">
+            <h3 class="card-title">Weather in @Model.City</h3>
+            <p><strong>Temperature:</strong> @Model.TemperatureC°C / @Model.TemperatureF°F</p>
+            <p><strong>Humidity:</strong> @Model.Humidity%</p>
+            <p><strong>Wind Speed:</strong> @Model.WindSpeed km/h</p>
+            <p><strong>Description:</strong> @Model.Summary</p>
+            <p><strong>Date:</strong> @Model.Date</p>
+        </div>
+    </div>
+}
+else
+{
+    <p class="text-danger">Weather data is not available. Please try again.</p>
+}

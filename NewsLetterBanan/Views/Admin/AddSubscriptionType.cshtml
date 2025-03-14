@@ -1,0 +1,40 @@
+﻿@model NewsLetterBanan.Data.SubscriptionType
+@{
+    ViewData["Title"] = "Add Subscription Type";
+}
+
+<h2>Add Subscription Type</h2>
+
+<form asp-action="AddSubscriptionType" method="post">
+    <div class="form-group">
+        <label for="TypeName">Type Name</label>
+        <input type="text" class="form-control" id="TypeName" name="TypeName" required />
+    </div>
+
+    <div class="form-group">
+        <label for="Description">Description</label>
+        <textarea class="form-control" id="Description" name="Description" required></textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="Price">Price</label>
+        <input type="number" class="form-control" id="Price" name="Price" step="0.01" required />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Add Subscription Type</button>
+    <a class="btn btn-secondary" href="@Url.Action("ManageSubscriptionTypes", "Admin")">Cancel</a>
+</form>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}

@@ -1,0 +1,653 @@
+﻿@using Microsoft.AspNetCore.Mvc.Rendering
+@model IEnumerable<NewsLetterBanan.Data.Article>
+
+@{
+    bool isLoggedIn = ViewBag.IsLoggedIn ?? false; // Ensure this is passed from the backend
+
+    var categories = ViewBag.Categories as List<NewsLetterBanan.Data.Category>;
+}<!-- Filter Section -->
+<div class="container-fluid my-4">
+    <form method="get" asp-action="GetAllArticles" asp-controller="Article" class="p-4 bg-light rounded shadow">
+        <div class="row g-3 align-items-end">
+
+            <!-- Category Dropdown -->
+            <div class="col-md-4">
+                <label for="category" class="form-label fw-bold text-primary">Category:</label>
+                <select id="category" name="categoryId" class="form-select form-select-lg border-primary shadow-sm">
+                    <option value="">-- Select Category --</option>
+                    @foreach (var category in
+
+
+                    categories)
+
+
+
+                    {
+                        <option value="@category.Id">@category.Name</option>
+                    }
+                </select>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="col-md-4">
+                <label for="search" class="form-label fw-bold text-primary">Search:</label>
+                <div class="input-group">
+                    <input type="text" id="search" name="searchKeyword" class="form-control form-control-lg border-primary shadow-sm" placeholder="Search articles..." />
+                </div>
+            </div>
+
+            <!-- Sorting Dropdown + Search Button -->
+            <div class="col-md-4 d-flex align-items-end">
+                <div class="w-75 me-2">
+                    <label for="sortBy" class="form-label fw-bold text-primary">Sort By:</label>
+                    <select id="sortBy" name="sortBy" class="form-select form-select-lg border-primary shadow-sm">
+                        <option value="date_newest" selected="@(ViewBag.SortBy == "date_newest")">Newest</option>
+                        <option value="date_oldest" selected="@(ViewBag.SortBy == "date_oldest")">Oldest</option>
+                        <option value="alphabetical_asc" selected="@(ViewBag.SortBy == "alphabetical_asc")">A-Z</option>
+                        <option value="alphabetical_desc" selected="@(ViewBag.SortBy == "alphabetical_desc")">Z-A</option>
+                        <option value="views" selected="@(ViewBag.SortBy == "views")">Most Viewed</option>
+                        <option value="likes" selected="@(ViewBag.SortBy == "likes")">Most Liked</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+
+        </div>
+    </form>
+
+
+</div>
+
+<!-- Archived Articles Dropdown (Centered) -->
+<div class="d-flex justify-content-center my-3">
+    <div class="col-md-4 text-center">
+        <label for="archivedArticles" class="form-label fw-bold text-primary">View Archived Articles:</label>
+        <select id="archivedArticles" class="form-select form-select-lg border-primary shadow-sm"
+                onchange="location.href=this.value;">
+            <option value="">-- Select Archived Article --</option>
+            @foreach (var article in ViewBag.ArchivedArticles)
+            {
+                <option value="@Url.Action("GetArchivedArticle", "Article", new { id = article.Id })">
+                    @article.Headline
+                </option>
+            }
+        </select>
+    </div>
+</div>
+<!-- Article Container (Full width on mobile, centered on larger screens) -->
+<div class="article-container container-fluid px-3 px-md-5">
+    @foreach (var item in Model)
+
+
+
+    {
+        <div class="card mb-4 shadow-sm">
+            <div class="card-body">
+                <!-- Article Headline -->
+                <h3 class="card-title h5">@item.Headline</h3>
+                <!-- Author -->
+                <p class="card-subtitle mb-2 text-muted small">By: @(item.User != null ? $"{item.User.FirstName} {item.User.LastName}" : "Unknown Author")</p>
+                <!-- Article Content (Truncated) -->
+                <p class="card-text small">
+                    @(item.Content.Length > 300 ? item.Content.Substring(0, 300) + "..." : item.Content)
+                </p>
+                <!-- Read More Link -->
+                <a href="@Url.Action("ViewArticle", "Article", new { id = item.Id })" class="btn btn-primary btn-sm">Read More</a>
+                <!-- Content Summary -->
+                <p class="card-text small mt-2"><strong>Content Summary:</strong> @item.ContentSummary</p>
+                <!-- Category -->
+                <p class="card-text small">
+                    <strong>Category:</strong>
+                    @if (item.Categories != null && item.Categories.Count == 1)
+                    {
+                        @item.Categories.First().Name
+                    }
+                    else if (item.Categories != null && item.Categories.Count > 1)
+                    {
+                        @string.Join(", ", item.Categories.Select(c => c.Name))
+                    }
+                    else
+                    {
+                        <span>No Category</span>
+                    }
+                </p>
+                <!-- Category Description -->
+                <p class="card-text small">
+                    <strong>Category Description:</strong>
+                    @if (item.Categories != null && item.Categories.Count == 1)
+                    {
+                        @item.Categories.First().Description
+                    }
+                    else if (item.Categories != null && item.Categories.Count > 1)
+                    {
+                        @string.Join(", ", item.Categories.Select(c => c.Description))
+                    }
+                    else
+                    {
+                        <span>No Category Description</span>
+                    }
+                </p>
+                <!-- Tags -->
+                <p class="card-text small">
+                    <strong>Tags:</strong>
+                    @if (item.Tags != null && item.Tags.Count == 1)
+                    {
+                        @item.Tags.First().TagName
+                    }
+                    else if (item.Tags != null && item.Tags.Count > 1)
+                    {
+                        @string.Join(", ", item.Tags.Select(t => t.TagName))
+                    }
+                    else
+                    {
+                        <span>No Tags</span>
+                    }
+                </p>
+                <!-- Tag Descriptions -->
+                <p class="card-text small">
+                    <strong>Tag Descriptions:</strong>
+                    @if (item.Tags != null && item.Tags.Count == 1)
+                    {
+                        @item.Tags.First().TagDescription
+                    }
+                    else if (item.Tags != null && item.Tags.Count > 1)
+                    {
+                        @string.Join(", ", item.Tags.Select(t => t.TagDescription))
+                    }
+                    else
+                    {
+                        <span>No Tag Descriptions</span>
+                    }
+                </p>
+
+                <!-- Display Images (Full Width) -->
+                @if (item.Images != null && item.Images.Any())
+
+
+
+                {
+                    <div class="mt-3">
+                        <strong class="small">Images:</strong>
+                        <div class="row">
+                            @foreach (var img in item.Images)
+                            {
+                                <div class="col-12 mb-3">
+                                    <div class="card">
+                                        <!-- Image (Full Width) -->
+                                        <img src="@img.ImgSourceURL" class="card-img-top img-fluid" alt="@img.Title">
+                                        <div class="card-body">
+                                            <h5 class="card-title h6">@img.Title</h5>
+                                            <p class="card-text small">@img.ImgDescription</p>
+                                            <p class="card-text small"><small class="text-muted">Taken By: @img.TakenBy</small></p>
+                                            <p class="card-text small"><small class="text-muted">License: @img.License</small></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <!-- Published Date -->
+                <p class="card-text small"><strong>Published Date:</strong> @item.DateStamp.ToString("MMMM dd, yyyy")</p>
+                <!-- Editor's Choice -->
+                <p class="card-text small">
+                    <strong>Editor's Choice:</strong>
+                    <span class="badge @(item.IsEditorsChoice ? "bg-success" : "bg-secondary")">
+                        @(item.IsEditorsChoice ? "Yes" : "No")
+                    </span>
+                </p>
+                <!-- Source URL -->
+                <p class="card-text small"><strong>Source URL:</strong> <a href="@item.SourceURL" target="_blank" class="text-break">@item.SourceURL</a></p>
+                <!-- Archived -->
+                <p class="card-text small"><strong>Archived:</strong> @(item.IsArchived ? "Yes" : "No")</p>
+                <!-- Views -->
+                <p class="card-text small"><strong>Views:</strong> @ViewBag.ViewCounts[item.Id]</p>
+                <!-- Likes -->
+                <p class="card-text small"><strong>Likes:</strong> @(ViewBag.LikeCounts.ContainsKey(item.Id) ? ViewBag.LikeCounts[item.Id] : 0)</p>
+                <!-- Like Article Button -->
+                <form method="post" asp-action="LikeArticle" asp-controller="User" class="like-form d-inline" onsubmit="return checkLogin(event)">
+                    <input type="hidden" name="articleId" value="@item.Id" />
+                    <input type="hidden" name="source" value="GetAllArticles" />
+                    <button type="submit" class="btn btn-sm btn-outline-primary"> @(ViewBag.IsLiked.ContainsKey(item.Id) ? "Unlike" : "Like")</button>
+                </form>
+                <!-- Comment Count -->
+                <p class="card-text small"><strong>Comments:</strong> @(ViewBag.CommentCounts.ContainsKey(item.Id) ? ViewBag.CommentCounts[item.Id] : 0)</p>
+
+                <!-- Show Comments Button -->
+                <button class="btn btn-sm btn-info toggle-comments @(item.CommentsOnOff ? "disabled" : "")"
+                        data-article-id="@item.Id"
+                @(item.CommentsOnOff ? "disabled" : "")>
+                    <i class="fas fa-comments"></i> Show Comments
+                </button>
+
+                @if (item.CommentsOnOff)
+
+
+
+                {
+                    <p class="text-muted small">Comments are disabled for this article.</p>
+                }
+
+
+
+                else
+
+
+
+                {
+                    <!-- Comments Section -->
+                    <div id="comments-@item.Id" class="mt-3" style="display: none;">
+                        <!-- Add Comment Form -->
+                        <form method="post" asp-action="AddComment" asp-controller="User" class="mt-3" onsubmit="return checkLogin(event)">
+                            <input type="hidden" name="articleId" value="@item.Id" />
+                            <input type="hidden" name="source" value="GetAllArticles" />
+                            <textarea name="content" class="form-control mb-2 small" placeholder="Write a comment..." required></textarea>
+                            <button type="submit" class="btn btn-sm btn-success">Post Comment</button>
+                        </form>
+                        <br />
+
+                        @foreach (var comment in item.Comments)
+
+
+
+                        {
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <!-- Comment Content -->
+                                    <p class="card-text small"><strong>Comment by:</strong> @(comment.User != null ? $"{comment.User.FirstName} {comment.User.LastName}" : "Anonymous")</p>
+                                    <p class="card-text small">@comment.Content</p>
+                                    <p class="card-text small"><small class="text-muted">Commented on: @comment.DateStamp.ToString("yyyy-MM-dd HH:mm")</small></p>
+                                    <!-- Comment Likes -->
+                                    <p class="card-text small"><strong>Likes:</strong> @(ViewBag.CommentLikeCounts.ContainsKey(comment.Id) ? ViewBag.CommentLikeCounts[comment.Id] : 0)</p>
+                                    <!-- Like Comment Button -->
+                                    <form method="post" asp-action="LikeComment" asp-controller="User" class="d-inline">
+                                        <input type="hidden" name="commentId" value="@comment.Id" />
+                                        <input type="hidden" name="source" value="GetAllArticles" />
+                                        <button type="submit" class="btn btn-sm @(ViewBag.IsCommentLiked.ContainsKey(comment.Id) ? "btn-danger" : "btn-outline-primary")">
+                                            👍 @(ViewBag.IsCommentLiked.ContainsKey(comment.Id) ? "Unlike" : "Like")
+                                        </button>
+                                    </form>
+
+                                    <!-- Edit and Delete Buttons -->
+                                    @if (comment.UserId == ViewBag.UserId)
+                                    {
+                                        <button onclick="toggleEditForm('@comment.Id')" class="btn btn-sm btn-primary">✏ Edit</button>
+                                        <form method="post" asp-action="DeleteComment" asp-controller="User" class="d-inline">
+                                            <input type="hidden" name="commentId" value="@comment.Id" />
+                                            <input type="hidden" name="source" value="GetAllArticles" />
+                                            <button type="submit" class="btn btn-sm btn-danger">🗑 Delete</button>
+                                        </form>
+                                    }
+                                    <!-- Update Comment Form -->
+                                    <form method="post" asp-action="UpdateComment" asp-controller="User" class="mt-2" id="update-form-@comment.Id" style="display: none;">
+                                        <input type="hidden" name="commentId" value="@comment.Id" />
+                                        <input type="hidden" name="source" value="GetAllArticles" />
+                                        <textarea name="newContent" class="form-control mb-2 small">@comment.Content</textarea>
+                                        <button type="submit" class="btn btn-sm btn-success">✔ Save</button>
+                                    </form>
+                                    <!-- Replies Section -->
+                                    <button class="btn btn-sm btn-info toggle-replies" data-comment-id="@comment.Id">
+                                        <i class="fas fa-comments"></i> @(comment.Replies.Count) Replies
+                                    </button>
+                                    <div class="replies mt-3" id="replies-@comment.Id" style="display: none;">
+                                        @foreach (var reply in comment.Replies)
+
+
+
+                                        {
+                                            <div class="card mb-2">
+                                                <div class="card-body">
+                                                    <p class="card-text small">@reply.Content</p>
+                                                    <p class="card-text small"><small class="text-muted">By: @(reply.User != null ? $"{reply.User.FirstName} {reply.User.LastName}" : "Anonymous") | @reply.DateStamp</small></p>
+                                                    <p class="card-text small"><strong>Likes:</strong> @(ViewBag.ReplyLikeCounts.ContainsKey(reply.Id) ? ViewBag.ReplyLikeCounts[reply.Id] : 0)</p>
+                                                    <!-- Like Reply Button -->
+                                                    <form method="post" asp-action="LikeReply" asp-controller="User" class="d-inline">
+                                                        <input type="hidden" name="replyId" value="@reply.Id" />
+                                                        <input type="hidden" name="source" value="GetAllArticles" />
+                                                        <button type="submit" class="btn btn-sm @(ViewBag.IsReplyLiked.ContainsKey(reply.Id) ? "btn-danger" : "btn-outline-danger")">
+                                                            👍 @(ViewBag.IsReplyLiked.ContainsKey(reply.Id) ? "Unlike" : "Like")
+                                                        </button>
+                                                    </form>
+                                                    <!-- Edit and Delete Buttons for Reply -->
+                                                    @if (reply.UserId == ViewBag.UserId)
+
+
+
+                                                    {
+                                                        <button type="button" class="btn btn-sm btn-primary" onclick="toggleReplyUpdateForm('@reply.Id')">✏ Edit</button>
+                                                        <form method="post" asp-action="DeleteReply" asp-controller="User" class="d-inline">
+                                                            <input type="hidden" name="replyId" value="@reply.Id" />
+                                                            <input type="hidden" name="source" value="GetAllArticles" />
+                                                            <button type="submit" class="btn btn-sm btn-danger">🗑 Delete</button>
+                                                        </form>
+                                                    }
+                                                    <!-- Update Reply Form -->
+                                                    <form method="post" asp-action="UpdateReply" asp-controller="User" class="mt-2" id="reply-update-form-@reply.Id" style="display: none;">
+                                                        <input type="hidden" name="replyId" value="@reply.Id" />
+                                                        <input type="hidden" name="source" value="GetAllArticles" />
+                                                        <textarea name="newContent" class="form-control mb-2 small">@reply.Content</textarea>
+                                                        <button type="submit" class="btn btn-sm btn-success">✔ Save</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        }
+                                        <!-- Add Reply Form -->
+                                        <form method="post" asp-action="AddReply" asp-controller="User" class="mt-3">
+                                            <input type="hidden" name="commentId" value="@comment.Id" />
+                                            <input type="hidden" name="source" value="GetAllArticles" />
+                                            <textarea name="content" class="form-control mb-2 small" placeholder="Write a reply..." required></textarea>
+                                            <button type="submit" class="btn btn-sm btn-info">Reply</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+<!-- Pagination Section -->
+@if (ViewBag.TotalPages > 1)
+
+
+
+
+
+
+
+{
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            <!-- Previous Button -->
+            <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                <a class="page-link"
+                   asp-action="GetAllArticles"
+                   asp-route-categoryId="@ViewBag.SelectedCategory"
+                   asp-route-searchKeyword="@ViewBag.SearchKeyword"
+                   asp-route-sortBy="@ViewBag.SortBy"
+                   asp-route-page="@(ViewBag.CurrentPage - 1)">
+                    &laquo; Previous
+                </a>
+            </li>
+
+            <!-- Page Numbers -->
+            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+
+
+
+
+
+
+
+            {
+                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                    <a class="page-link"
+                       asp-action="GetAllArticles"
+                       asp-route-categoryId="@ViewBag.SelectedCategory"
+                       asp-route-searchKeyword="@ViewBag.SearchKeyword"
+                       asp-route-sortBy="@ViewBag.SortBy"
+                       asp-route-page="@i">
+                        @i
+                    </a>
+                </li>
+            }
+
+            <!-- Next Button -->
+            <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                <a class="page-link"
+                   asp-action="GetAllArticles"
+                   asp-route-categoryId="@ViewBag.SelectedCategory"
+                   asp-route-searchKeyword="@ViewBag.SearchKeyword"
+                   asp-route-sortBy="@ViewBag.SortBy"
+                   asp-route-page="@(ViewBag.CurrentPage + 1)">
+                    Next &raquo;
+                </a>
+            </li>
+        </ul>
+    </nav>
+}
+
+
+<script>
+
+    document.querySelectorAll(".comments").forEach(section => {
+        section.style.display = "block"; // Force open comments
+    });
+
+    // Function to get current scroll position
+    function saveScrollPosition() {
+        localStorage.setItem("scrollPosition", window.scrollY);
+    }
+
+    // Restore scroll position after reload
+    function restoreScrollPosition() {
+        const scrollPosition = localStorage.getItem("scrollPosition");
+        if (scrollPosition) {
+            setTimeout(() => {
+                window.scrollTo(0, parseInt(scrollPosition));
+            }, 100); // Delay to allow content to load
+            localStorage.removeItem("scrollPosition"); // Remove after restoring
+        }
+    }
+
+    // Toggle comments and save state
+    document.querySelectorAll('.toggle-comments').forEach(button => {
+        button.addEventListener('click', function () {
+            const articleId = this.getAttribute('data-article-id');
+            const commentsSection = document.getElementById('comments-' + articleId);
+            const isOpen = commentsSection.style.display === "block";
+
+            if (isOpen) {
+                commentsSection.style.display = "none";
+                button.innerHTML = '<i class="fas fa-comments"></i> Show Comments';
+                localStorage.setItem("openComments-" + articleId, "false");
+            } else {
+                commentsSection.style.display = "block";
+                button.innerHTML = '<i class="fas fa-comments"></i> Hide Comments';
+                localStorage.setItem("openComments-" + articleId, "true");
+            }
+            saveScrollPosition(); // Save position after action
+        });
+    });
+
+    // Toggle replies and save state
+    document.querySelectorAll('.toggle-replies').forEach(button => {
+        button.addEventListener('click', function () {
+            const commentId = this.getAttribute('data-comment-id');
+            const replySection = document.getElementById('replies-' + commentId);
+            const isOpen = replySection.style.display === "block";
+
+            if (isOpen) {
+                replySection.style.display = "none";
+                button.innerHTML = '<i class="fas fa-comments"></i> Show Replies';
+                localStorage.setItem("openReplies-" + commentId, "false");
+            } else {
+                replySection.style.display = "block";
+                button.innerHTML = '<i class="fas fa-comments"></i> Hide Replies';
+                localStorage.setItem("openReplies-" + commentId, "true");
+            }
+            saveScrollPosition();
+        });
+    });
+
+    // Restore visibility of comments and replies after reload
+    window.addEventListener("load", function () {
+        restoreScrollPosition();
+
+        document.querySelectorAll('.toggle-comments').forEach(button => {
+            const articleId = button.getAttribute('data-article-id');
+            if (localStorage.getItem("openComments-" + articleId) === "true") {
+                const commentsSection = document.getElementById('comments-' + articleId);
+                if (commentsSection) {
+                    commentsSection.style.display = "block";
+                    button.innerHTML = '<i class="fas fa-comments"></i> Hide Comments';
+                }
+            }
+        });
+
+        document.querySelectorAll('.toggle-replies').forEach(button => {
+            const commentId = button.getAttribute('data-comment-id');
+            if (localStorage.getItem("openReplies-" + commentId) === "true") {
+                const replySection = document.getElementById('replies-' + commentId);
+                if (replySection) {
+                    replySection.style.display = "block";
+                    button.innerHTML = '<i class="fas fa-comments"></i> Hide Replies';
+                }
+            }
+        });
+    });
+
+    // Keep comments open after submitting a comment
+    function saveOpenCommentBeforeSubmit(articleId) {
+        localStorage.setItem("openComments-" + articleId, "true");
+        saveScrollPosition();
+    }
+
+    // Keep replies open after submitting a reply
+    function saveOpenReplyBeforeSubmit(commentId) {
+        localStorage.setItem("openReplies-" + commentId, "true");
+        saveScrollPosition();
+    }
+
+    // Function to toggle the edit form visibility
+    function toggleEditForm(commentId) {
+        const updateForm = document.getElementById('update-form-' + commentId);
+        const btn = document.querySelector(`button[onclick="toggleEditForm('${commentId}')"]`);
+
+        if (updateForm.style.display === "none") {
+            updateForm.style.display = "block";
+            btn.innerHTML = '✏ Cancel Edit';
+        } else {
+            updateForm.style.display = "none";
+            btn.innerHTML = '✏ Edit';
+        }
+        saveScrollPosition();
+    }
+
+    // Toggle reply edit form
+    function toggleReplyUpdateForm(replyId) {
+        const updateForm = document.getElementById('reply-update-form-' + replyId);
+        updateForm.style.display = updateForm.style.display === "none" ? "block" : "none";
+        saveScrollPosition();
+    }
+
+    // Check login before performing actions
+    function checkLogin(event) {
+        var isLoggedIn = @Json.Serialize(isLoggedIn);
+        if (!isLoggedIn) {
+            event.preventDefault();
+            alert("You need to log in to perform this action!");
+            return false;
+        }
+        return true;
+    }
+
+    // Apply login check to like, comment, and reply forms
+    document.querySelectorAll('.like-form, .comment-form, .reply-form').forEach(form => {
+        form.onsubmit = checkLogin;
+    });
+
+    // Save scroll position on page unload
+    window.addEventListener("beforeunload", saveScrollPosition);
+
+    window.addEventListener("load", function () {
+        if (window.location.hash) {
+            setTimeout(function () {
+                const targetElement = document.querySelector(window.location.hash);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: "smooth" });
+                }
+                history.replaceState(null, null, window.location.pathname);
+            }, 200); // Slight delay to allow fragment scrolling
+        }
+
+        setTimeout(restoreScrollPosition, 400); // Delay restoring scroll position to let fragment scroll first
+    });
+
+    window.addEventListener("load", function () {
+        // Handle URL fragment scrolling separately
+        if (window.location.hash) {
+            setTimeout(function () {
+                const targetElement = document.querySelector(window.location.hash);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: "smooth" });
+                }
+
+                // Reset the fragment **only after** the scroll happens
+                setTimeout(() => {
+                    history.replaceState(null, null, window.location.pathname);
+                }, 300);
+            }, 100);
+        }
+
+        // Restore previous scroll position separately
+        setTimeout(restoreScrollPosition, 100);
+    });
+    document.addEventListener("DOMContentLoaded", function () {
+        // Handle fragment scrolling when the page loads
+        handleFragmentScroll();
+    });
+
+    // Use pageshow for back/forward navigation
+    window.addEventListener("pageshow", function (event) {
+        // Handle fragment scrolling when navigating back/forward
+        handleFragmentScroll();
+    });
+
+    function handleFragmentScroll() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const commentId = urlParams.get("commentId");
+        const replyId = urlParams.get("replyId");
+
+        // Construct the target element's ID based on the query parameters or fragment
+        let targetId = "";
+        if (commentId) {
+            targetId = `comment-${commentId}`;
+        } else if (replyId) {
+            targetId = `reply-${replyId}`;
+        } else if (window.location.hash) {
+            targetId = window.location.hash.substring(1); // Remove the '#' from the fragment
+        }
+
+        if (targetId) {
+            setTimeout(() => {
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    // Scroll to the target element smoothly
+                    targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
+
+                    // Optionally add a highlight effect
+                    targetElement.classList.add("highlight");
+                    setTimeout(() => {
+                        targetElement.classList.remove("highlight");
+                    }, 3000);
+                }
+
+                // Clear the query parameters and fragment so subsequent loads don't use them
+                const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                history.replaceState({}, document.title, newUrl);
+            }, 300); // Slight delay to ensure the page has fully loaded
+        }
+    }
+</script>
+
+
+<style>
+    /* Fixed size for all images */
+    .card-img-top {
+        width: 100%;
+        height: 200px;
+        object-fit: cover; /* or 'contain' */
+    }
+
+    /* Responsive images */
+    .img-fluid {
+        max-width: 100%;
+        height: auto;
+    }
+</style>

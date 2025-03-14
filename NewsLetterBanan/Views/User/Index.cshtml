@@ -1,0 +1,150 @@
+﻿@model NewsLetterBanan.Models.ViewModels.ActionViewModel
+
+@{
+    ViewData["Title"] = "User Actions";
+}
+
+<h2>Perform an Action</h2>
+<!-- Like/Unlike Article Form -->
+<form method="post" action="/User/ToggleArticleLike" class="action-form">
+    <h3>Like/Unlike Article</h3>
+    <label for="UserId">User ID</label>
+    <input type="text" class="form-control" name="UserId" required />
+
+    <label for="ArticleId">Article ID</label>
+    <input type="number" class="form-control" name="ArticleId" required />
+
+    <button type="submit" class="btn btn-primary">Toggle Like/Unlike</button>
+</form>
+
+
+<!-- Add Comment Form -->
+<form method="post" action="/User/AddComment" class="action-form">
+    <h3>Add Comment</h3>
+    <label for="ArticleId">Article Id</label>
+    <input type="number" name="ArticleId" class="form-control" required />
+
+    <label for="UserId">User Id</label>
+    <input type="text" name="UserId" class="form-control" required />
+
+    <label for="Content">Content</label>
+    <textarea name="Content" class="form-control" required></textarea>
+
+    <button type="submit" class="btn btn-primary">Add Comment</button>
+</form>
+
+<!-- Delete Comment Form -->
+<form method="post" action="/User/DeleteComment" class="action-form">
+    <h3>Delete Comment</h3>
+    <label for="CommentId">Comment Id</label>
+    <input type="number" name="CommentId" class="form-control" required />
+
+    <label for="UserId">User Id</label>
+    <input type="text" name="UserId" class="form-control" required />
+
+    <button type="submit" class="btn btn-danger">Delete Comment</button>
+</form>
+
+
+
+<!-- Edit Comment Form -->
+<form method="post" action="/User/EditComment" class="action-form">
+    <h3>Edit Comment</h3>
+    <label for="CommentId">Comment Id</label>
+    <input type="number" name="CommentId" class="form-control" required />
+
+    <label for="UserId">User Id</label>
+    <input type="text" name="UserId" class="form-control" required />
+
+    <label for="Content">New Content</label>
+    <textarea name="Content" class="form-control" required></textarea>
+
+    <button type="submit" class="btn btn-warning">Edit Comment</button>
+</form>
+
+<!-- Check If Comment is Liked -->
+<form method="get" action="/User/IsCommentLiked" class="action-form">
+    <h3>Check If Comment is Liked</h3>
+    <label for="CommentId">Comment Id</label>
+    <input type="number" name="CommentId" class="form-control" required />
+
+    <label for="UserId">User Id</label>
+    <input type="text" name="UserId" class="form-control" required />
+
+    <button type="submit" class="btn btn-primary">Check Like Status</button>
+</form>
+
+<!-- Like/Unlike Comment Form -->
+<form method="post" action="/User/ToggleCommentLike" class="action-form">
+    <h3>Like/Unlike Comment</h3>
+    <label for="UserId">User ID</label>
+    <input type="text" name="UserId" class="form-control" required />
+
+    <label for="CommentId">Comment ID</label>
+    <input type="number" name="CommentId" class="form-control" required />
+
+    <button type="submit" class="btn btn-primary">Toggle Like/Unlike</button>
+</form>
+
+
+<!-- Add Reply Form -->
+<form method="post" action="/User/AddReply" class="action-form">
+    <h3>Reply to Comment</h3>
+    <label for="CommentId">Comment Id</label>
+    <input type="number" name="CommentId" class="form-control" required />
+
+    <label for="UserId">User Id</label>
+    <input type="text" name="UserId" class="form-control" required />
+
+    <label for="Content">Reply Content</label>
+    <textarea name="Content" class="form-control" required></textarea>
+
+    <button type="submit" class="btn btn-info">Post Reply</button>
+</form>
+<!-- Edit Reply Form -->
+<form method="post" action="/User/EditReply" class="action-form">
+    <h3>Edit Reply</h3>
+    <label for="ReplyId">Reply Id</label>
+    <input type="number" name="ReplyId" class="form-control" required />
+
+    <label for="UserId">User Id</label>
+    <input type="text" name="UserId" class="form-control" required />
+
+    <label for="Content">New Content</label>
+    <textarea name="Content" class="form-control" required></textarea>
+
+    <button type="submit" class="btn btn-warning">Edit Reply</button>
+</form>
+
+<!-- Like/Unlike Reply Form -->
+<form method="post" action="/User/ToggleReplyLike" class="action-form">
+    <h3>Like/Unlike Reply</h3>
+    <label for="UserId">User ID</label>
+    <input type="text" name="UserId" class="form-control" required />
+
+    <label for="ReplyId">Reply ID</label>
+    <input type="number" name="ReplyId" class="form-control" required />
+
+    <button type="submit" class="btn btn-primary">Toggle Like/Unlike</button>
+</form>
+
+<!-- Delete Reply Form -->
+<form method="post" action="/User/DeleteReply" class="action-form">
+    <h3>Delete Reply</h3>
+    <label for="ReplyId">Reply Id</label>
+    <input type="number" name="ReplyId" class="form-control" required />
+
+    <label for="UserId">User Id</label>
+    <input type="text" name="UserId" class="form-control" required />
+
+    <button type="submit" class="btn btn-danger">Delete Reply</button>
+</form>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success">@TempData["Message"]</div>
+}
+@if (TempData["Message"] != null)
+{
+        <div class="alert alert-success">@TempData["Message"]</div>
+}

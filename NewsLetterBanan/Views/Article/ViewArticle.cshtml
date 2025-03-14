@@ -1,0 +1,506 @@
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model Article
+
+@{
+    bool isLoggedIn = ViewBag.IsLoggedIn ?? false; // Ensure this is passed from the backend
+    var categories = ViewBag.Categories as List<NewsLetterBanan.Data.Category>;
+}
+<!-- Article Container (Full width on mobile, centered on larger screens) -->
+<div class="article-container container-fluid px-3 px-md-5">
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <!-- Article Headline -->
+            <h3 class="card-title h5">@Model.Headline</h3>
+            <!-- Author -->
+            <p class="card-subtitle mb-2 text-muted small">By: @(Model.User != null ? $"{Model.User.FirstName} {Model.User.LastName}" : "Unknown Author")</p>
+            <!-- Article Content -->
+            <p class="card-text small">@Model.Content</p>
+            <!-- Content Summary -->
+            <p class="card-text small"><strong>Content Summary:</strong> @Model.ContentSummary</p>
+            <!-- Category -->
+            <p class="card-text small">
+                <strong>Category:</strong>
+                @if (Model.Categories != null && Model.Categories.Count == 1)
+
+                {
+                    @Model.Categories.First().Name
+                }
+
+                else if (Model.Categories != null && Model.Categories.Count > 1)
+
+                {
+                    @string.Join(", ", Model.Categories.Select(c => c.Name))
+                }
+
+                else
+
+                {
+                    <span>No Category</span>
+                }
+            </p>
+            <!-- Category Description -->
+            <p class="card-text small">
+                <strong>Category Description:</strong>
+                @if (Model.Categories != null && Model.Categories.Count == 1)
+
+                {
+                    @Model.Categories.First().Description
+                }
+
+                else if (Model.Categories != null && Model.Categories.Count > 1)
+
+                {
+                    @string.Join(", ", Model.Categories.Select(c => c.Description))
+                }
+
+                else
+
+                {
+                    <span>No Category Description</span>
+                }
+            </p>
+            <!-- Tags -->
+            <p class="card-text small">
+                <strong>Tags:</strong>
+                @if (Model.Tags != null && Model.Tags.Count == 1)
+
+                {
+                    @Model.Tags.First().TagName
+                }
+
+                else if (Model.Tags != null && Model.Tags.Count > 1)
+
+                {
+                    @string.Join(", ", Model.Tags.Select(t => t.TagName))
+                }
+
+                else
+
+                {
+                    <span>No Tags</span>
+                }
+            </p>
+            <!-- Tag Descriptions -->
+            <p class="card-text small">
+                <strong>Tag Descriptions:</strong>
+                @if (Model.Tags != null && Model.Tags.Count == 1)
+
+                {
+                    @Model.Tags.First().TagDescription
+                }
+
+                else if (Model.Tags != null && Model.Tags.Count > 1)
+
+                {
+                    @string.Join(", ", Model.Tags.Select(t => t.TagDescription))
+                }
+
+                else
+
+                {
+                    <span>No Tag Descriptions</span>
+                }
+            </p>
+
+            <!-- Display Images -->
+            @if (Model.Images != null && Model.Images.Any())
+            {
+                <div class="mt-3">
+                    <strong class="small">Images:</strong>
+                    <div class="row">
+                        @foreach (var img in Model.Images)
+
+                        {
+                            <div class="col-12 mb-3">
+                                <div class="card">
+                                    <img src="@img.ImgSourceURL" class="card-img-top w-100" alt="@img.Title">
+                                    <div class="card-body">
+                                        <h5 class="card-title h6">@img.Title</h5>
+                                        <p class="card-text small">@img.ImgDescription</p>
+                                        <p class="card-text small"><small class="text-muted">Taken By: @img.TakenBy</small></p>
+                                        <p class="card-text small"><small class="text-muted">License: @img.License</small></p>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Published Date -->
+            <p class="card-text small"><strong>Published Date:</strong> @Model.DateStamp.ToString("MMMM dd, yyyy")</p>
+            <!-- Editor's Choice -->
+            <p class="card-text small">
+                <strong>Editor's Choice:</strong>
+                <span class="badge @(Model.IsEditorsChoice ? "bg-success" : "bg-secondary")">
+                    @(Model.IsEditorsChoice ? "Yes" : "No")
+                </span>
+            </p>
+            <!-- Source URL -->
+            <p class="card-text small"><strong>Source URL:</strong> <a href="@Model.SourceURL" target="_blank" class="text-break">@Model.SourceURL</a></p>
+            <!-- Archived -->
+            <p class="card-text small"><strong>Archived:</strong> @(Model.IsArchived ? "Yes" : "No")</p>
+            <!-- Likes -->
+            <p class="card-text small"><strong>Likes:</strong> @(ViewBag.LikeCounts.ContainsKey(Model.Id) ? ViewBag.LikeCounts[Model.Id] : 0)</p>
+            <!-- Views -->
+            <p class="card-text small"><strong>Views:</strong> @ViewBag.ViewCount</p>
+            <!-- Like Article Button -->
+            <form method="post" asp-action="LikeArticle" asp-controller="User" class="d-inline" onsubmit="checkLogin(event)" >
+                <input type="hidden" name="articleId" value="@Model?.Id" />
+                <button type="submit" class="btn btn-sm @(ViewBag.IsLiked != null && ViewBag.IsLiked.ContainsKey(Model?.Id ?? 0) ? "btn-danger" : "btn-outline-primary")">
+                    <i class="fas fa-thumbs-up"></i>
+                    @(ViewBag.IsLiked != null && ViewBag.IsLiked.ContainsKey(Model?.Id ?? 0) ? "Unlike" : "Like")
+                </button>
+            </form>
+
+            <!-- Comment Count -->
+            <p class="card-text small"><strong>Comments:</strong> @(ViewBag.CommentCounts.ContainsKey(Model.Id) ? ViewBag.CommentCounts[Model.Id] : 0)</p>
+
+            <!-- Show Comments Button -->
+            <button class="btn btn-sm btn-info toggle-comments" data-article-id="@Model.Id" @(ViewBag.CommentsOnOff == true ? "disabled" : "")>
+                <i class="fas fa-comments"></i> Show Comments
+            </button>
+
+            @if (ViewBag.CommentsOnOff == true)
+            {
+                <p class="text-muted small">Comments are disabled for this article.</p>
+            }
+            else
+            {
+                <!-- Comments Section -->
+                <div class="comments-section mt-3" id="comments-@Model.Id" style="display:none;">
+                    <!-- Add Comment Form -->
+                    <form method="post" asp-action="AddComment" asp-controller="User" class="comment-form mb-3"
+                          onsubmit="checkLogin(event); saveOpenCommentBeforeSubmit('@Model.Id'); saveScrollPosition('@Model.Id');">
+                        <input type="hidden" name="articleId" value="@Model.Id" />
+                        <input type="hidden" name="source" value="GetAllArticles" />
+                        <textarea name="content" class="form-control mb-2 small" placeholder="Write a comment..." required></textarea>
+                        <button type="submit" class="btn btn-sm btn-success">Post Comment</button>
+                    </form>
+
+                    <!-- Comment List -->
+                    @foreach (var comment in Model.Comments)
+                    {
+                        <div class="comment-item card mb-3" id="comment-@comment.Id">
+                            <div class="card-body">
+                                <!-- Comment Content -->
+                                <p class="card-text small"><strong>Comment by:</strong> @(comment.User != null ? $"{comment.User.FirstName} {comment.User.LastName}" : "Anonymous")</p>
+                                <p class="card-text small">@comment.Content</p>
+                                <p class="card-text small"><small>Commented on: @comment.DateStamp.ToString("yyyy-MM-dd HH:mm")</small></p>
+                                <!-- Comment Likes -->
+                                <p class="card-text small"><strong>Likes:</strong> @(ViewBag.CommentLikeCounts.ContainsKey(comment.Id) ? ViewBag.CommentLikeCounts[comment.Id] : 0)</p>
+                                <!-- Like Comment Button -->
+                                <form method="post" asp-action="LikeComment" asp-controller="User" class="d-inline">
+                                    <input type="hidden" name="commentId" value="@comment.Id" />
+                                    <input type="hidden" name="source" value="GetAllArticles" />
+                                    <button type="submit" class="btn btn-sm @(ViewBag.IsCommentLiked.ContainsKey(comment.Id) ? "btn-danger" : "btn-outline-primary")">
+                                        👍 @(ViewBag.IsCommentLiked.ContainsKey(comment.Id) ? "Unlike" : "Like")
+                                    </button>
+                                </form>
+
+                                <!-- Edit and Delete Buttons -->
+                                @if (comment.UserId == ViewBag.UserId)
+
+                                {
+                                    <button onclick="toggleEditForm('@comment.Id'); saveOpenEditForm('@comment.Id')" class="btn btn-sm btn-primary">✏ Edit</button>
+                                    <form method="post" asp-action="DeleteComment" asp-controller="User" class="d-inline">
+                                        <input type="hidden" name="commentId" value="@comment.Id" />
+                                        <button type="submit" class="btn btn-sm btn-danger">🗑 Delete</button>
+                                    </form>
+                                }
+
+                                <!-- Update Comment Form -->
+                                <form method="post" asp-action="UpdateComment" asp-controller="User" class="update-form mt-2" id="update-form-@comment.Id" style="display: none;">
+                                    <input type="hidden" name="commentId" value="@comment.Id" />
+                                    <textarea name="newContent" class="form-control mb-2 small">@comment.Content</textarea>
+                                    <button type="submit" class="btn btn-sm btn-success">✔ Save</button>
+                                </form>
+
+                                <!-- Replies Section -->
+                                <button class="btn btn-sm btn-info toggle-replies" data-comment-id="@comment.Id">
+                                    <i class="fas fa-comments"></i> @(comment.Replies.Count) Replies
+                                </button>
+                                <div class="replies mt-3" id="replies-@comment.Id" style="display:none;">
+                                    @foreach (var reply in comment.Replies)
+
+                                    {
+                                        <div class="reply-item card mb-2" id="reply-@reply.Id">
+                                            <div class="card-body">
+                                                <!-- Reply Content -->
+                                                <p class="card-text small">@reply.Content</p>
+                                                <p class="card-text small"><small>By: @(reply.User != null ? $"{reply.User.FirstName} {reply.User.LastName}" : "Anonymous") | @reply.DateStamp</small></p>
+                                                <!-- Reply Likes -->
+                                                <p class="card-text small"><strong>Likes:</strong> @(ViewBag.ReplyLikeCounts.ContainsKey(reply.Id) ? ViewBag.ReplyLikeCounts[reply.Id] : 0)</p>
+                                                <!-- Like Reply Button -->
+                                                <form method="post" asp-action="LikeReply" asp-controller="User" class="d-inline">
+                                                    <input type="hidden" name="replyId" value="@reply.Id" />
+                                                    <input type="hidden" name="source" value="GetAllArticles" />
+                                                    <button type="submit" class="btn btn-sm @(ViewBag.IsReplyLiked.ContainsKey(reply.Id) ? "btn-danger" : "btn-outline-danger")">
+                                                        👍 @(ViewBag.IsReplyLiked.ContainsKey(reply.Id) ? "Unlike" : "Like")
+                                                    </button>
+                                                </form>
+
+                                                <!-- Edit and Delete Buttons for Reply -->
+                                                @if (reply.UserId == ViewBag.UserId)
+
+                                                {
+                                                    <button type="button" class="btn btn-sm btn-primary" onclick="toggleReplyUpdateForm('@reply.Id')">✏ Edit</button>
+                                                    <form method="post" asp-action="DeleteReply" asp-controller="User" class="d-inline">
+                                                        <input type="hidden" name="replyId" value="@reply.Id" />
+                                                        <button type="submit" class="btn btn-sm btn-danger">🗑 Delete</button>
+                                                    </form>
+                                                }
+
+                                                <!-- Update Reply Form -->
+                                                <form method="post" asp-action="UpdateReply" asp-controller="User" class="update-reply-form mt-2" id="reply-update-form-@reply.Id" style="display: none;">
+                                                    <input type="hidden" name="replyId" value="@reply.Id" />
+                                                    <textarea name="newContent" class="form-control mb-2 small">@reply.Content</textarea>
+                                                    <button type="submit" class="btn btn-sm btn-success">✔ Save</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    }
+
+                                    <!-- Add Reply Form -->
+                                    <form method="post" asp-action="AddReply" asp-controller="User" class="reply-form mt-3">
+                                        <input type="hidden" name="commentId" value="@comment.Id" />
+                                        <textarea name="content" class="form-control mb-2 small" placeholder="Write a reply..." required></textarea>
+                                        <button type="submit" class="btn btn-sm btn-info">Reply</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+        
+    document.querySelectorAll(".comments-section").forEach(section => {
+        section.style.display = "block"; // Force open comments
+    });
+    document.querySelectorAll(".replies").forEach(section => {
+        section.style.display = "block"; // Force open replies
+    });
+
+
+    // Function to get current scroll position
+    function saveScrollPosition() {
+        localStorage.setItem("scrollPosition", window.scrollY);
+    }
+
+    // Restore scroll position after reload
+    function restoreScrollPosition() {
+        const scrollPosition = localStorage.getItem("scrollPosition");
+        if (scrollPosition) {
+            setTimeout(() => {
+                window.scrollTo(0, parseInt(scrollPosition));
+            }, 100); // Delay to allow content to load
+            localStorage.removeItem("scrollPosition"); // Remove after restoring
+        }
+    }
+
+    // Toggle comments and save state
+    document.querySelectorAll('.toggle-comments').forEach(button => {
+        button.addEventListener('click', function () {
+            const articleId = this.getAttribute('data-article-id');
+            const commentsSection = document.getElementById('comments-' + articleId);
+            const isOpen = commentsSection.style.display === "block";
+
+            if (isOpen) {
+                commentsSection.style.display = "none";
+                button.innerHTML = '<i class="fas fa-comments"></i> Show Comments';
+                localStorage.setItem("openComments-" + articleId, "false");
+            } else {
+                commentsSection.style.display = "block";
+                button.innerHTML = '<i class="fas fa-comments"></i> Hide Comments';
+                localStorage.setItem("openComments-" + articleId, "true");
+            }
+            saveScrollPosition(); // Save position after action
+        });
+    });
+
+    // Toggle replies and save state
+    document.querySelectorAll('.toggle-replies').forEach(button => {
+        button.addEventListener('click', function () {
+            const commentId = this.getAttribute('data-comment-id');
+            const replySection = document.getElementById('replies-' + commentId);
+            const isOpen = replySection.style.display === "block";
+
+            if (isOpen) {
+                replySection.style.display = "none";
+                button.innerHTML = '<i class="fas fa-comments"></i> Show Replies';
+                localStorage.setItem("openReplies-" + commentId, "false");
+            } else {
+                replySection.style.display = "block";
+                button.innerHTML = '<i class="fas fa-comments"></i> Hide Replies';
+                localStorage.setItem("openReplies-" + commentId, "true");
+            }
+            saveScrollPosition();
+        });
+    });
+
+    // Restore visibility of comments and replies after reload
+    window.addEventListener("load", function () {
+        restoreScrollPosition();
+
+        document.querySelectorAll('.toggle-comments').forEach(button => {
+            const articleId = button.getAttribute('data-article-id');
+            if (localStorage.getItem("openComments-" + articleId) === "true") {
+                const commentsSection = document.getElementById('comments-' + articleId);
+                if (commentsSection) {
+                    commentsSection.style.display = "block";
+                    button.innerHTML = '<i class="fas fa-comments"></i> Hide Comments';
+                }
+            }
+        });
+
+        document.querySelectorAll('.toggle-replies').forEach(button => {
+            const commentId = button.getAttribute('data-comment-id');
+            if (localStorage.getItem("openReplies-" + commentId) === "true") {
+                const replySection = document.getElementById('replies-' + commentId);
+                if (replySection) {
+                    replySection.style.display = "block";
+                    button.innerHTML = '<i class="fas fa-comments"></i> Hide Replies';
+                }
+            }
+        });
+    });
+
+    // Keep comments open after submitting a comment
+    function saveOpenCommentBeforeSubmit(articleId) {
+        localStorage.setItem("openComments-" + articleId, "true");
+        saveScrollPosition();
+    }
+
+    // Keep replies open after submitting a reply
+    function saveOpenReplyBeforeSubmit(commentId) {
+        localStorage.setItem("openReplies-" + commentId, "true");
+        saveScrollPosition();
+    }
+
+    // Function to toggle the edit form visibility
+    function toggleEditForm(commentId) {
+        const updateForm = document.getElementById('update-form-' + commentId);
+        const btn = document.querySelector(`button[onclick="toggleEditForm('${commentId}')"]`);
+
+        if (updateForm.style.display === "none") {
+            updateForm.style.display = "block";
+            btn.innerHTML = '✏ Cancel Edit';
+        } else {
+            updateForm.style.display = "none";
+            btn.innerHTML = '✏ Edit';
+        }
+        saveScrollPosition();
+    }
+
+    // Toggle reply edit form
+    function toggleReplyUpdateForm(replyId) {
+        const updateForm = document.getElementById('reply-update-form-' + replyId);
+        updateForm.style.display = updateForm.style.display === "none" ? "block" : "none";
+        saveScrollPosition();
+    }
+
+    // Check login before performing actions
+    function checkLogin(event) {
+        var isLoggedIn = @Json.Serialize(isLoggedIn);
+        if (!isLoggedIn) {
+            event.preventDefault();
+            alert("You need to log in to perform this action!");
+            return false;
+        }
+        return true;
+    }
+
+    // Apply login check to like, comment, and reply forms
+    document.querySelectorAll('.like-form, .comment-form, .reply-form').forEach(form => {
+        form.onsubmit = checkLogin;
+    });
+
+    // Save scroll position on page unload
+    window.addEventListener("beforeunload", saveScrollPosition);
+
+    window.addEventListener("load", function () {
+        if (window.location.hash) {
+            setTimeout(function () {
+                const targetElement = document.querySelector(window.location.hash);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: "smooth" });
+                }
+                history.replaceState(null, null, window.location.pathname);
+            }, 200); // Slight delay to allow fragment scrolling
+        }
+
+        setTimeout(restoreScrollPosition, 400); // Delay restoring scroll position to let fragment scroll first
+    });
+
+    window.addEventListener("load", function () {
+        // Handle URL fragment scrolling separately
+        if (window.location.hash) {
+            setTimeout(function () {
+                const targetElement = document.querySelector(window.location.hash);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: "smooth" });
+                }
+
+                // Reset the fragment **only after** the scroll happens
+                setTimeout(() => {
+                    history.replaceState(null, null, window.location.pathname);
+                }, 300);
+            }, 100);
+        }
+
+        // Restore previous scroll position separately
+        setTimeout(restoreScrollPosition, 100);
+    });
+        document.addEventListener("DOMContentLoaded", function () {
+        // Handle fragment scrolling when the page loads
+        handleFragmentScroll();
+    });
+
+    // Use pageshow for back/forward navigation
+    window.addEventListener("pageshow", function (event) {
+        // Handle fragment scrolling when navigating back/forward
+        handleFragmentScroll();
+    });
+
+    function handleFragmentScroll() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const commentId = urlParams.get("commentId");
+        const replyId = urlParams.get("replyId");
+
+        // Construct the target element's ID based on the query parameters or fragment
+        let targetId = "";
+        if (commentId) {
+            targetId = `comment-${commentId}`;
+        } else if (replyId) {
+            targetId = `reply-${replyId}`;
+        } else if (window.location.hash) {
+            targetId = window.location.hash.substring(1); // Remove the '#' from the fragment
+        }
+
+        if (targetId) {
+            setTimeout(() => {
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    // Scroll to the target element smoothly
+                    targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
+
+                    // Optionally add a highlight effect
+                    targetElement.classList.add("highlight");
+                    setTimeout(() => {
+                        targetElement.classList.remove("highlight");
+                    }, 3000);
+                }
+
+                // Clear the query parameters and fragment so subsequent loads don't use them
+                const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                history.replaceState({}, document.title, newUrl);
+            }, 300); // Slight delay to ensure the page has fully loaded
+        }
+    }
+</script>
+

@@ -1,0 +1,73 @@
+﻿@model List<NewsLetterBanan.Data.Sent>
+
+<div class="container my-4">
+    <h2 class="mb-4">Sent Messages</h2>
+
+    <div class="d-none d-md-block">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover shadow-sm">
+                <thead class="thead-dark">
+                    <tr>
+                        <th class="text-center">Message</th>
+                        <th class="text-center">Sent To</th>
+                        <th class="text-center">Sent At</th>
+                        <th class="text-center">Read Status</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var sent in Model)
+                    {
+                        <tr class="@(sent.IsRead ? "" : "table-warning")">
+                            <td class="align-middle">@sent.Message.Content</td>
+                            <td class="align-middle text-center">@(sent.Message.Receiver?.Email ?? "N/A")</td>
+                            <td class="align-middle text-center">@sent.Message.Timestamp.ToString("g")</td>
+                            <td class="align-middle text-center">
+                                <span class="badge @(sent.IsRead ? "badge-success" : "badge-danger")">
+                                    @(sent.IsRead ? "Read" : "Unread")
+                                </span>
+                            </td>
+                            <td class="align-middle text-center">
+                                <div class="btn-group">
+                                    <a asp-action="EditMessage" asp-route-id="@sent.Message.Id" class="btn btn-sm btn-outline-primary">
+                                        ✏️ Edit
+                                    </a>
+                                    <form method="post" asp-action="DeleteSentMessage" class="d-inline">
+                                        <input type="hidden" name="sentId" value="@sent.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            🗑️ Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Mobile-friendly Cards -->
+    <div class="d-md-none">
+        @foreach (var sent in Model)
+        {
+            <div class="card mb-3 @(sent.IsRead ? "" : "border-primary")">
+                <div class="card-body">
+                    <h5 class="card-title">Sent To: @(sent.Message.Receiver != null ? sent.Message.Receiver.Email : "N/A")</h5>
+                    <p class="card-text"><strong>Message:</strong> @sent.Message.Content</p>
+                    <p class="card-text"><strong>Sent At:</strong> @sent.Message.Timestamp.ToString("g")</p>
+                    <p class="card-text"><strong>Status:</strong> <span class="@(sent.IsRead ? "text-success" : "text-danger")">@(sent.IsRead ? "Read" : "Unread")</span></p>
+
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="EditMessage" asp-route-id="@sent.Message.Id" class="btn btn-primary btn-sm">Edit</a>
+
+                        <form method="post" asp-action="DeleteSentMessage">
+                            <input type="hidden" name="sentId" value="@sent.Id" />
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

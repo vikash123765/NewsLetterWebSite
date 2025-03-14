@@ -1,0 +1,294 @@
+﻿@model NewsLetterBanan.Models.ViewModels.HomePageViewModel
+@{
+    bool isLoggedIn = ViewBag.IsLoggedIn ?? false; // Ensure this is passed from the backend
+
+
+}
+
+<div class="container-fluid my-5">
+    <div class="row g-4">
+        <!-- Main Content -->
+        <div class="col-lg-8 col-md-12">
+            <!-- Main Headline Section -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h1 class="display-4 text-center fw-bold mb-0">Welcome to the Vikash News Site!</h1>
+                    <p class="text-center text-muted mt-2">Your source for the latest updates and insights.</p>
+                </div>
+            </div>
+
+            <!-- Latest Articles Section -->
+            <section class="mb-5">
+                <h2 class="mb-4 fw-semibold">Latest Articles</h2>
+                <div class="row g-4">
+                    @foreach (var item in Model.Latest)
+                    {
+                        <div class="col-md-6">
+                            <div class="card shadow-sm h-100 border-0">
+                                <div class="card-header bg-primary bg-opacity-75 text-white">
+
+                                    <h4 class="card-title mb-0">@item.Headline</h4>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">
+                                        @(item.Content.Length > 200 ? item.Content.Substring(0, 200) + "..." : item.Content)
+                                    </p>
+                                    <a href="@Url.Action("ViewArticle", "Article", new { id = item.Id })" class="btn btn-success btn-sm">Read More</a>
+                                    <p class="mt-2 small"><strong>By:</strong> @(item.User != null ? $"{item.User.FirstName} {item.User.LastName}" : "Unknown Author")</p>
+                                    <p class="small"><strong>Category:</strong> @(item.Categories?.Count > 0 ? string.Join(", ", item.Categories.Select(c => c.Name)) : "No Category")</p>
+                                    <p class="small"><strong>Tags:</strong> @(item.Tags?.Count > 0 ? string.Join(", ", item.Tags.Select(t => t.TagName)) : "No Tags")</p>
+
+                                    <!-- Images Section -->
+                                    @if (item.Images != null && item.Images.Any())
+                                    {
+                                        <div class="mt-3">
+                                            <strong class="small">Images:</strong>
+                                            <ul class="list-unstyled">
+                                                @foreach (var img in item.Images)
+                                                {
+                                                    <li class="mb-2">
+                                                        <img src="@img.ImgSourceURL" class="img-fluid rounded img-article" alt="@img.Title" style="max-height: 150px; object-fit: cover;" />
+                                                        <p class="small mt-1"><strong>Title:</strong> @img.Title</p>
+                                                        <p class="small"><strong>Description:</strong> @img.ImgDescription</p>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    }
+
+                                    <p class="small"><strong>Likes:</strong> @(ViewBag.LikeCounts.ContainsKey(item.Id) ? ViewBag.LikeCounts[item.Id] : 0)</p>
+                                    <!-- Like Article Button -->
+                                    <form method="post" asp-action="LikeArticle" asp-controller="User" class="like-form" onsubmit="return checkLogin(event)">
+                                        <input type="hidden" name="articleId" value="@item.Id" />
+
+                                        <input type="hidden" name="source" value="GetAllArticles" />
+                                        <button type="submit" class="btn btn-sm btn-outline-primary"> @(ViewBag.IsLiked.ContainsKey(item.Id) ? "Unlike" : "Like")</button>
+                                    </form>
+                                    <p class="small"><strong>Comments:</strong> @(ViewBag.CommentCounts.ContainsKey(item.Id) ? ViewBag.CommentCounts[item.Id] : 0)</p>
+                                    <p class="small"><strong>Views:</strong> @(ViewBag.ViewCounts.ContainsKey(item.Id) ? ViewBag.ViewCounts[item.Id] : 0)</p>
+                                    <p class="small"><strong>Published:</strong> @item.DateStamp.ToString("MMMM dd, yyyy")</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </section>
+
+            <!-- Most Popular Section -->
+            <section class="mb-5">
+                <h2 class="mb-4 fw-semibold">Most Popular Articles</h2>
+                <div class="row g-4">
+                    @foreach (var item in Model.MostPopular)
+                    {
+                        <div class="col-md-6">
+                            <div class="card shadow-sm h-100 border-0">
+                                <div class="card-header bg-success bg-opacity-75 text-white">
+
+                                    <h4 class="card-title mb-0">@item.Headline</h4>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">
+                                        @(item.Content.Length > 200 ? item.Content.Substring(0, 200) + "..." : item.Content)
+                                    </p>
+                                    <a href="@Url.Action("ViewArticle", "Article", new { id = item.Id })" class="btn btn-success btn-sm">Read More</a>
+                                    <p class="mt-2 small"><strong>By:</strong> @(item.User != null ? $"{item.User.FirstName} {item.User.LastName}" : "Unknown Author")</p>
+                                    <p class="small"><strong>Category:</strong> @(item.Categories?.Count > 0 ? string.Join(", ", item.Categories.Select(c => c.Name)) : "No Category")</p>
+                                    <p class="small"><strong>Tags:</strong> @(item.Tags?.Count > 0 ? string.Join(", ", item.Tags.Select(t => t.TagName)) : "No Tags")</p>
+
+                                    <!-- Images Section -->
+                                    @if (item.Images != null && item.Images.Any())
+                                    {
+                                        <div class="mt-3">
+                                            <strong class="small">Images:</strong>
+                                            <ul class="list-unstyled">
+                                                @foreach (var img in item.Images)
+                                                {
+                                                    <li class="mb-2">
+                                                        <img src="@img.ImgSourceURL" class="img-fluid rounded img-article" alt="@img.Title" style="max-height: 150px; object-fit: cover;" />
+                                                        <p class="small mt-1"><strong>Title:</strong> @img.Title</p>
+                                                        <p class="small"><strong>Description:</strong> @img.ImgDescription</p>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    }
+
+                                    <p class="small"><strong>Likes:</strong> @(ViewBag.LikeCounts.ContainsKey(item.Id) ? ViewBag.LikeCounts[item.Id] : 0)</p>
+                                    <!-- Like Article Button -->
+                                    <form method="post" asp-action="LikeArticle" asp-controller="User" class="like-form" onsubmit="return checkLogin(event)">
+                                        <input type="hidden" name="articleId" value="@item.Id" />
+
+                                        <input type="hidden" name="source" value="GetAllArticles" />
+                                        <button type="submit" class="btn btn-sm btn-outline-primary"> @(ViewBag.IsLiked.ContainsKey(item.Id) ? "Unlike" : "Like")</button>
+                                    </form>
+                                    <p class="small"><strong>Comments:</strong> @(ViewBag.CommentCounts.ContainsKey(item.Id) ? ViewBag.CommentCounts[item.Id] : 0)</p>
+                                    <p class="small"><strong>Views:</strong> @(ViewBag.ViewCounts.ContainsKey(item.Id) ? ViewBag.ViewCounts[item.Id] : 0)</p>
+                                    <p class="small"><strong>Published:</strong> @item.DateStamp.ToString("MMMM dd, yyyy")</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </section>
+
+            <!-- Editor's Choice Section -->
+            <section class="mb-5">
+                <h2 class="mb-4 fw-semibold">Editor's Choice</h2>
+                <div class="row g-4">
+                    @foreach (var item in Model.EditorsChoice)
+                    {
+                        <div class="col-md-6">
+                            <div class="card shadow-sm h-100 border-0">
+                                <div class="card-header bg-warning bg-opacity-50 text-dark">
+
+                                    <h4 class="card-title mb-0">@item.Headline</h4>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">
+                                        @(item.Content.Length > 200 ? item.Content.Substring(0, 200) + "..." : item.Content)
+                                    </p>
+                                    <a href="@Url.Action("ViewArticle", "Article", new { id = item.Id })" class="btn btn-success">Read More</a>
+                                    <p class="mt-2 small"><strong>By:</strong> @(item.User != null ? $"{item.User.FirstName} {item.User.LastName}" : "Unknown Author")</p>
+                                    <p class="small"><strong>Category:</strong> @(item.Categories?.Count > 0 ? string.Join(", ", item.Categories.Select(c => c.Name)) : "No Category")</p>
+                                    <p class="small"><strong>Tags:</strong> @(item.Tags?.Count > 0 ? string.Join(", ", item.Tags.Select(t => t.TagName)) : "No Tags")</p>
+
+                                    <!-- Images Section -->
+                                    @if (item.Images != null && item.Images.Any())
+                                    {
+                                        <div class="mt-3">
+                                            <strong class="small">Images:</strong>
+                                            <ul class="list-unstyled">
+                                                @foreach (var img in item.Images)
+                                                {
+                                                    <li class="mb-2">
+                                                        <img src="@img.ImgSourceURL" class="img-fluid rounded img-article" alt="@img.Title" style="max-height: 150px; object-fit: cover;" />
+                                                        <p class="small mt-1"><strong>Title:</strong> @img.Title</p>
+                                                        <p class="small"><strong>Description:</strong> @img.ImgDescription</p>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    }
+
+                                    <p class="small"><strong>Likes:</strong> @(ViewBag.LikeCounts.ContainsKey(item.Id) ? ViewBag.LikeCounts[item.Id] : 0)</p>
+                                    <!-- Like Article Button -->
+                                    <form method="post" asp-action="LikeArticle" asp-controller="User" class="like-form" onsubmit="return checkLogin(event)">
+                                        <input type="hidden" name="articleId" value="@item.Id" />
+
+                                        <input type="hidden" name="source" value="GetAllArticles" />
+                                        <button type="submit" class="btn btn-sm btn-outline-primary"> @(ViewBag.IsLiked.ContainsKey(item.Id) ? "Unlike" : "Like")</button>
+                                    </form>
+                                    <p class="small"><strong>Comments:</strong> @(ViewBag.CommentCounts.ContainsKey(item.Id) ? ViewBag.CommentCounts[item.Id] : 0)</p>
+                                    <p class="small"><strong>Views:</strong> @(ViewBag.ViewCounts.ContainsKey(item.Id) ? ViewBag.ViewCounts[item.Id] : 0)</p>
+                                    <p class="small"><strong>Published:</strong> @item.DateStamp.ToString("MMMM dd, yyyy")</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </section>
+        </div>
+
+        <!-- Side Panel -->
+        <div class="col-lg-4 col-md-12">
+            <div class="sticky-top" style="top: 20px;">
+                <!-- Weather Widget -->
+                <div class="card shadow-sm mb-4 border-0">
+                    <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Weather</h5>
+                        <button class="btn btn-sm btn-outline-light toggle-btn" data-target="weatherContent">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="card-body p-3 collapse show" id="weatherContent">
+                        <div class="input-group mb-3">
+                            <input type="text" id="cityInput" class="form-control" placeholder="Enter city name">
+                            <button class="btn btn-info text-white" id="getWeatherBtn">Get Weather</button>
+                        </div>
+                        <div id="weatherResult">
+                            <vc:weather city="Stockholm"></vc:weather>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Electricity Prices Widget -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-info text-white  d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Electricity Prices</h5>
+                        <button class="btn btn-sm btn-outline-light toggle-btn" data-target="electricityContent">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="card-body p-3 collapse show" id="electricityContent">
+                        <button class="btn bg-info text-white w-100 mb-3" id="getPricesBtn">Get Prices</button>
+                        <div id="electricityPriceResult">
+                            <vc:electricity-price></vc:electricity-price>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Scroll restoration
+            setTimeout(function () {
+                if (sessionStorage.getItem("scrollPosition") !== null) {
+                    window.scrollTo({
+                        top: sessionStorage.getItem("scrollPosition"),
+                        behavior: "smooth"
+                    });
+                    sessionStorage.removeItem("scrollPosition");
+                }
+            }, 300);
+
+            document.querySelectorAll("form").forEach(form => {
+                form.addEventListener("submit", function () {
+                    sessionStorage.setItem("scrollPosition", window.scrollY);
+                });
+            });
+
+            // Toggle functionality for side panel widgets
+            document.querySelectorAll(".toggle-btn").forEach(button => {
+                button.addEventListener("click", function () {
+                    const targetId = this.getAttribute("data-target");
+                    const content = document.getElementById(targetId);
+                    const icon = this.querySelector("i");
+
+                    if (content.classList.contains("show")) {
+                        content.classList.remove("show");
+                        icon.classList.remove("fa-chevron-up");
+                        icon.classList.add("fa-chevron-down");
+                    } else {
+                        content.classList.add("show");
+                        icon.classList.remove("fa-chevron-down");
+                        icon.classList.add("fa-chevron-up");
+                    }
+                });
+            });
+        });
+
+        // Check login before performing actions
+        function checkLogin(event) {
+            var isLoggedIn = @Json.Serialize(isLoggedIn);
+            if (!isLoggedIn) {
+                event.preventDefault();
+                alert("You need to log in to perform this action!");
+                return false;
+            }
+            return true;
+        }
+
+    </script>
+}
+
+<style>
+    .img-article {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+</style>

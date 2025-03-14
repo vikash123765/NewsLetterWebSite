@@ -1,0 +1,98 @@
+﻿@model IEnumerable<NewsLetterBanan.Data.Subscription>
+
+<div class="container mt-4">
+    <h1 class="text-center">Manage Subscriptions</h1>
+
+    <!-- Desktop Table -->
+    <div class="d-none d-md-block">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Subscription Name</th>
+                        <th>Price</th>
+                        <th>Expires</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var subscription in Model)
+                    {
+                        <tr>
+                            <td>@subscription.User?.UserName</td>
+                            <td>@subscription.SubscriptionType?.TypeName</td>
+                            <td>
+                                @if (subscription.PaymentComplete)
+                                {
+                                    @subscription.Price.ToString("C")
+                                }
+                                else
+                                {
+                                    <span class="text-muted">No Entry</span>
+                                }
+                            </td>
+                            <td>@subscription.Expires.ToString("g")</td>
+                            <td>
+                                <form asp-action="DeleteSubscription" asp-route-id="@subscription.Id" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Mobile-friendly Cards -->
+    <div class="d-md-none">
+        @foreach (var subscription in Model)
+        {
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Subscription: @subscription.SubscriptionType?.TypeName</h5>
+                    <p class="card-text"><strong>User:</strong> @subscription.User?.UserName</p>
+                    <p class="card-text">
+                        <strong>Price:</strong>
+                        @if (subscription.PaymentComplete)
+                        {
+                            @subscription.Price.ToString("C")
+                        }
+                        else
+                        {
+                            <span class="text-muted">No Entry</span>
+                        }
+                    </p>
+                    <p class="card-text"><strong>Expires:</strong> @subscription.Expires.ToString("g")</p>
+
+                    <form asp-action="DeleteSubscription" asp-route-id="@subscription.Id" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+
+    <a class="btn btn-info mb-3" href="/Admin/ManageSubscriptionTypes">Manage Subscription Types</a>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+</div>

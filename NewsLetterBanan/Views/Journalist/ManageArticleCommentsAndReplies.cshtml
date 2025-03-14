@@ -1,0 +1,66 @@
+﻿@model IEnumerable<NewsLetterBanan.Data.Comment>
+@{
+    ViewData["Title"] = "Manage Comments on My Articles";
+}
+
+<h2 class="mb-4">Comments on My Articles</h2>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+@foreach (var comment in Model)
+{
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title">Article: @comment.Article.Headline</h5>
+            <p class="card-text">
+                <strong>Comment:</strong> @comment.Content
+                <br />
+                <small class="text-muted">Posted by: @comment.User.UserName on @comment.DateStamp</small>
+            </p>
+
+            <!-- Delete Comment Button -->
+            <form asp-controller="Journalist" asp-action="DeleteComment" asp-route-id="@comment.Id" method="post" style="display:inline;">
+                <button type="submit" class="btn btn-danger btn-sm">Delete Comment</button>
+            </form>
+
+            <!-- Replies Section -->
+            @if (comment.Replies.Any())
+            {
+                <div class="mt-3">
+                    <h6>Replies:</h6>
+                    <ul class="list-group">
+                        @foreach (var reply in comment.Replies)
+                        {
+                            <li class="list-group-item">
+                                @reply.Content
+                                <br />
+                                <small class="text-muted">Replied by: @reply.User.UserName on @reply.DateStamp</small>
+
+                                <!-- Delete Reply Button -->
+                                <form asp-controller="Journalist" asp-action="DeleteCommentReply" asp-route-id="@reply.Id" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-danger mt-1">Delete Reply</button>
+                                </form>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+            else
+            {
+                <span class="text-muted">No Replies</span>
+            }
+        </div>
+    </div>
+}

@@ -1,0 +1,54 @@
+﻿@model IEnumerable<NewsLetterBanan.Data.SubscriptionType>
+@{
+    ViewData["Title"] = "Manage Subscription Types";
+}
+
+<h2>Manage Subscription Types</h2>
+
+<a class="btn btn-info mb-3" href="/Admin/AddSubscriptionType">Add subsrciption types</a>
+
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Type Name</th>
+            <th>Description</th>
+            <th>Price</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var subType in Model)
+        {
+            <tr>
+                <td>@subType.Id</td>
+                <td>@subType.TypeName</td>
+                <td>@subType.Description</td>
+                <td>@subType.Price</td>
+                <td>
+                    <!-- Delete Subscription Type -->
+                    <form asp-action="DeleteSubscriptionType" asp-route-id="@subType.Id" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-danger"
+                                onclick="return confirm('Are you sure you want to delete this subscription type?');">
+                            Delete
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}

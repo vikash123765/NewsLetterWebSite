@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "ArchiveArticlesFunctionApp": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7185",
+      "launchBrowser": false
+    }
+  }
+}
