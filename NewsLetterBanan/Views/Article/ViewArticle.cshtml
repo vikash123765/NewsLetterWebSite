@@ -277,230 +277,129 @@
     </div>
 </div>
 
+
 <script>
-        
-    document.querySelectorAll(".comments-section").forEach(section => {
-        section.style.display = "block"; // Force open comments
-    });
-    document.querySelectorAll(".replies").forEach(section => {
-        section.style.display = "block"; // Force open replies
-    });
-
-
-    // Function to get current scroll position
-    function saveScrollPosition() {
-        localStorage.setItem("scrollPosition", window.scrollY);
-    }
-
-    // Restore scroll position after reload
-    function restoreScrollPosition() {
-        const scrollPosition = localStorage.getItem("scrollPosition");
-        if (scrollPosition) {
-            setTimeout(() => {
-                window.scrollTo(0, parseInt(scrollPosition));
-            }, 100); // Delay to allow content to load
-            localStorage.removeItem("scrollPosition"); // Remove after restoring
-        }
-    }
-
-    // Toggle comments and save state
-    document.querySelectorAll('.toggle-comments').forEach(button => {
-        button.addEventListener('click', function () {
-            const articleId = this.getAttribute('data-article-id');
-            const commentsSection = document.getElementById('comments-' + articleId);
-            const isOpen = commentsSection.style.display === "block";
-
-            if (isOpen) {
-                commentsSection.style.display = "none";
-                button.innerHTML = '<i class="fas fa-comments"></i> Show Comments';
-                localStorage.setItem("openComments-" + articleId, "false");
-            } else {
-                commentsSection.style.display = "block";
-                button.innerHTML = '<i class="fas fa-comments"></i> Hide Comments';
-                localStorage.setItem("openComments-" + articleId, "true");
-            }
-            saveScrollPosition(); // Save position after action
+    document.addEventListener("DOMContentLoaded", function () {
+        // Ensure comments are always visible
+        document.querySelectorAll(".comments").forEach(section => {
+            section.style.display = "block"; // Force open comments
         });
-    });
 
-    // Toggle replies and save state
-    document.querySelectorAll('.toggle-replies').forEach(button => {
-        button.addEventListener('click', function () {
-            const commentId = this.getAttribute('data-comment-id');
-            const replySection = document.getElementById('replies-' + commentId);
-            const isOpen = replySection.style.display === "block";
-
-            if (isOpen) {
-                replySection.style.display = "none";
-                button.innerHTML = '<i class="fas fa-comments"></i> Show Replies';
-                localStorage.setItem("openReplies-" + commentId, "false");
-            } else {
-                replySection.style.display = "block";
-                button.innerHTML = '<i class="fas fa-comments"></i> Hide Replies';
-                localStorage.setItem("openReplies-" + commentId, "true");
-            }
-            saveScrollPosition();
-        });
-    });
-
-    // Restore visibility of comments and replies after reload
-    window.addEventListener("load", function () {
-        restoreScrollPosition();
-
+        // Ensure comments remain open after reload
         document.querySelectorAll('.toggle-comments').forEach(button => {
             const articleId = button.getAttribute('data-article-id');
+            const commentsSection = document.getElementById('comments-' + articleId);
+
+            // Keep comments open based on stored state
             if (localStorage.getItem("openComments-" + articleId) === "true") {
-                const commentsSection = document.getElementById('comments-' + articleId);
-                if (commentsSection) {
-                    commentsSection.style.display = "block";
-                    button.innerHTML = '<i class="fas fa-comments"></i> Hide Comments';
-                }
+                commentsSection.style.display = "block";
             }
+
+            button.addEventListener('click', function () {
+                const isOpen = commentsSection.style.display === "block";
+                commentsSection.style.display = isOpen ? "none" : "block";
+
+                // Save the state to localStorage
+                localStorage.setItem("openComments-" + articleId, !isOpen ? "true" : "false");
+            });
         });
 
+        // Ensure replies remain open after reload
         document.querySelectorAll('.toggle-replies').forEach(button => {
             const commentId = button.getAttribute('data-comment-id');
+            const replySection = document.getElementById('replies-' + commentId);
+
+            // Keep replies open based on stored state
             if (localStorage.getItem("openReplies-" + commentId) === "true") {
-                const replySection = document.getElementById('replies-' + commentId);
-                if (replySection) {
-                    replySection.style.display = "block";
-                    button.innerHTML = '<i class="fas fa-comments"></i> Hide Replies';
+                replySection.style.display = "block";
+            }
+
+            button.addEventListener('click', function () {
+                const isOpen = replySection.style.display === "block";
+                replySection.style.display = isOpen ? "none" : "block";
+
+                // Save the state to localStorage
+                localStorage.setItem("openReplies-" + commentId, !isOpen ? "true" : "false");
+            });
+        });
+
+        // Prevent scrolling manipulation and reload instantly after form submission
+        document.querySelectorAll("form").forEach(form => {
+            form.addEventListener("submit", function (event) {
+                event.preventDefault(); // Prevent default form submission
+
+                // Save open comment and reply states before reload
+                document.querySelectorAll('.toggle-comments').forEach(button => {
+                    const articleId = button.getAttribute('data-article-id');
+                    const commentsSection = document.getElementById('comments-' + articleId);
+                    localStorage.setItem("openComments-" + articleId, commentsSection.style.display === "block" ? "true" : "false");
+                });
+
+                document.querySelectorAll('.toggle-replies').forEach(button => {
+                    const commentId = button.getAttribute('data-comment-id');
+                    const replySection = document.getElementById('replies-' + commentId);
+                    localStorage.setItem("openReplies-" + commentId, replySection.style.display === "block" ? "true" : "false");
+                });
+
+                // Get form action and data
+                const formData = new FormData(this);
+                const actionUrl = this.action;
+                const method = this.method.toUpperCase();
+
+                // Use fetch to submit the form data asynchronously
+                fetch(actionUrl, {
+                    method: method,
+                    body: formData,
+                    headers: { "X-Requested-With": "XMLHttpRequest" }
+                })
+                    .then(response => {
+                        if (!response.ok) throw new Error("Network error");
+                        return response.text();
+                    })
+                    .then(() => {
+                        location.reload(); // Reload instantly without scrolling adjustments
+                    })
+                    .catch(error => console.error("Form submission error:", error));
+            });
+        });
+
+        // 🔥 Fix: Toggle edit form visibility using event delegation
+        document.addEventListener("click", function (event) {
+            // Edit Comment
+            if (event.target.matches(".edit-comment-btn")) {
+                const commentId = event.target.getAttribute("data-comment-id");
+                const updateForm = document.getElementById("update-form-" + commentId);
+                if (updateForm) {
+                    updateForm.style.display = updateForm.style.display === "none" ? "block" : "none";
+                }
+            }
+
+            // Edit Reply
+            if (event.target.matches(".edit-reply-btn")) {
+                const replyId = event.target.getAttribute("data-reply-id");
+                const updateForm = document.getElementById("reply-update-form-" + replyId);
+                if (updateForm) {
+                    updateForm.style.display = updateForm.style.display === "none" ? "block" : "none";
                 }
             }
         });
-    });
 
-    // Keep comments open after submitting a comment
-    function saveOpenCommentBeforeSubmit(articleId) {
-        localStorage.setItem("openComments-" + articleId, "true");
-        saveScrollPosition();
-    }
-
-    // Keep replies open after submitting a reply
-    function saveOpenReplyBeforeSubmit(commentId) {
-        localStorage.setItem("openReplies-" + commentId, "true");
-        saveScrollPosition();
-    }
-
-    // Function to toggle the edit form visibility
-    function toggleEditForm(commentId) {
-        const updateForm = document.getElementById('update-form-' + commentId);
-        const btn = document.querySelector(`button[onclick="toggleEditForm('${commentId}')"]`);
-
-        if (updateForm.style.display === "none") {
-            updateForm.style.display = "block";
-            btn.innerHTML = '✏ Cancel Edit';
-        } else {
-            updateForm.style.display = "none";
-            btn.innerHTML = '✏ Edit';
-        }
-        saveScrollPosition();
-    }
-
-    // Toggle reply edit form
-    function toggleReplyUpdateForm(replyId) {
-        const updateForm = document.getElementById('reply-update-form-' + replyId);
-        updateForm.style.display = updateForm.style.display === "none" ? "block" : "none";
-        saveScrollPosition();
-    }
-
-    // Check login before performing actions
-    function checkLogin(event) {
-        var isLoggedIn = @Json.Serialize(isLoggedIn);
-        if (!isLoggedIn) {
-            event.preventDefault();
-            alert("You need to log in to perform this action!");
-            return false;
-        }
-        return true;
-    }
-
-    // Apply login check to like, comment, and reply forms
-    document.querySelectorAll('.like-form, .comment-form, .reply-form').forEach(form => {
-        form.onsubmit = checkLogin;
-    });
-
-    // Save scroll position on page unload
-    window.addEventListener("beforeunload", saveScrollPosition);
-
-    window.addEventListener("load", function () {
-        if (window.location.hash) {
-            setTimeout(function () {
-                const targetElement = document.querySelector(window.location.hash);
-                if (targetElement) {
-                    targetElement.scrollIntoView({ behavior: "smooth" });
-                }
-                history.replaceState(null, null, window.location.pathname);
-            }, 200); // Slight delay to allow fragment scrolling
+        // Login check before performing actions
+        function checkLogin(event) {
+            var isLoggedIn = @Json.Serialize(isLoggedIn);
+            if (!isLoggedIn) {
+                event.preventDefault();
+                alert("You need to log in to perform this action!");
+                return false;
+            }
+            return true;
         }
 
-        setTimeout(restoreScrollPosition, 400); // Delay restoring scroll position to let fragment scroll first
+        // Apply login check to like, comment, reply, and delete forms
+        document.querySelectorAll('.like-form, .comment-form, .reply-form, .delete-form').forEach(form => {
+            form.onsubmit = checkLogin;
+        });
     });
 
-    window.addEventListener("load", function () {
-        // Handle URL fragment scrolling separately
-        if (window.location.hash) {
-            setTimeout(function () {
-                const targetElement = document.querySelector(window.location.hash);
-                if (targetElement) {
-                    targetElement.scrollIntoView({ behavior: "smooth" });
-                }
 
-                // Reset the fragment **only after** the scroll happens
-                setTimeout(() => {
-                    history.replaceState(null, null, window.location.pathname);
-                }, 300);
-            }, 100);
-        }
-
-        // Restore previous scroll position separately
-        setTimeout(restoreScrollPosition, 100);
-    });
-        document.addEventListener("DOMContentLoaded", function () {
-        // Handle fragment scrolling when the page loads
-        handleFragmentScroll();
-    });
-
-    // Use pageshow for back/forward navigation
-    window.addEventListener("pageshow", function (event) {
-        // Handle fragment scrolling when navigating back/forward
-        handleFragmentScroll();
-    });
-
-    function handleFragmentScroll() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const commentId = urlParams.get("commentId");
-        const replyId = urlParams.get("replyId");
-
-        // Construct the target element's ID based on the query parameters or fragment
-        let targetId = "";
-        if (commentId) {
-            targetId = `comment-${commentId}`;
-        } else if (replyId) {
-            targetId = `reply-${replyId}`;
-        } else if (window.location.hash) {
-            targetId = window.location.hash.substring(1); // Remove the '#' from the fragment
-        }
-
-        if (targetId) {
-            setTimeout(() => {
-                const targetElement = document.getElementById(targetId);
-                if (targetElement) {
-                    // Scroll to the target element smoothly
-                    targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
-
-                    // Optionally add a highlight effect
-                    targetElement.classList.add("highlight");
-                    setTimeout(() => {
-                        targetElement.classList.remove("highlight");
-                    }, 3000);
-                }
-
-                // Clear the query parameters and fragment so subsequent loads don't use them
-                const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
-                history.replaceState({}, document.title, newUrl);
-            }, 300); // Slight delay to ensure the page has fully loaded
-        }
-    }
 </script>
-
