@@ -202,7 +202,7 @@
                                 @if (comment.UserId == ViewBag.UserId)
 
                                 {
-                                    <button onclick="toggleEditForm('@comment.Id'); saveOpenEditForm('@comment.Id')" class="btn btn-sm btn-primary">✏ Edit</button>
+                                    <button class="btn btn-sm btn-primary edit-comment-btn" data-comment-id="@comment.Id">✏ Edit</button>
                                     <form method="post" asp-action="DeleteComment" asp-controller="User" class="d-inline">
                                         <input type="hidden" name="commentId" value="@comment.Id" />
                                         <button type="submit" class="btn btn-sm btn-danger">🗑 Delete</button>
@@ -210,7 +210,8 @@
                                 }
 
                                 <!-- Update Comment Form -->
-                                <form method="post" asp-action="UpdateComment" asp-controller="User" class="update-form mt-2" id="update-form-@comment.Id" style="display: none;">
+                                <form method="post" asp-action="UpdateComment" asp-controller="User" class="mt-2" id="update-form-@comment.Id" style="display: none;">
+
                                     <input type="hidden" name="commentId" value="@comment.Id" />
                                     <textarea name="newContent" class="form-control mb-2 small">@comment.Content</textarea>
                                     <button type="submit" class="btn btn-sm btn-success">✔ Save</button>
@@ -244,7 +245,8 @@
                                                 @if (reply.UserId == ViewBag.UserId)
 
                                                 {
-                                                    <button type="button" class="btn btn-sm btn-primary" onclick="toggleReplyUpdateForm('@reply.Id')">✏ Edit</button>
+
+                                                    <button class="btn btn-sm btn-primary edit-reply-btn" data-reply-id="@reply.Id">✏ Edit</button>
                                                     <form method="post" asp-action="DeleteReply" asp-controller="User" class="d-inline">
                                                         <input type="hidden" name="replyId" value="@reply.Id" />
                                                         <button type="submit" class="btn btn-sm btn-danger">🗑 Delete</button>
