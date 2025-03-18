@@ -278,30 +278,79 @@
 </div>
 
 <script>
-        
-    document.querySelectorAll(".comments-section").forEach(section => {
-        section.style.display = "block"; // Force open comments
-    });
-    document.querySelectorAll(".replies").forEach(section => {
-        section.style.display = "block"; // Force open replies
-    });
-
+    // Debugging: Log when the script is loaded
+    console.log("✅ Scroll restoration script loaded.");
 
     // Function to get current scroll position
     function saveScrollPosition() {
-        localStorage.setItem("scrollPosition", window.scrollY);
+        const scrollPosition = window.scrollY;
+        console.log("📌 Saving scroll position:", scrollPosition);
+        localStorage.setItem("scrollPosition", scrollPosition);
     }
 
     // Restore scroll position after reload
     function restoreScrollPosition() {
         const scrollPosition = localStorage.getItem("scrollPosition");
         if (scrollPosition) {
-            setTimeout(() => {
-                window.scrollTo(0, parseInt(scrollPosition));
-            }, 100); // Delay to allow content to load
+            console.log("📌 Restoring scroll position:", scrollPosition);
+            window.scrollTo(0, parseInt(scrollPosition)); // Instantly scroll
             localStorage.removeItem("scrollPosition"); // Remove after restoring
+        } else {
+            console.log("📌 No saved scroll position found.");
         }
     }
+
+    // Handle fragment scrolling (e.g., #comment-123)
+    function handleFragmentScroll() {
+        if (window.location.hash) {
+            console.log("📌 Handling fragment scrolling for:", window.location.hash);
+            const targetElement = document.querySelector(window.location.hash);
+            if (targetElement) {
+                console.log("📌 Found target element for fragment:", targetElement);
+                targetElement.scrollIntoView(); // Instantly scroll to fragment
+            } else {
+                console.log("📌 Target element not found for fragment:", window.location.hash);
+            }
+        } else {
+            console.log("📌 No fragment found in URL.");
+        }
+    }
+
+    // Save scroll position on page unload
+    window.addEventListener("beforeunload", function () {
+        console.log("📌 Page is unloading. Saving scroll position...");
+        saveScrollPosition();
+    });
+
+    // Save scroll position before form submissions
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function () {
+            console.log("📌 Form submitted. Saving scroll position...");
+            saveScrollPosition();
+        });
+    });
+
+    // Restore scroll position and handle fragment scrolling on page load
+    document.addEventListener("DOMContentLoaded", function () {
+        console.log("📌 DOM fully loaded.");
+        restoreScrollPosition(); // Restore saved scroll position
+        handleFragmentScroll(); // Handle fragment scrolling
+    });
+
+    // Handle fragment scrolling when navigating back/forward
+    window.addEventListener("pageshow", function (event) {
+        console.log("📌 Page shown (back/forward navigation).");
+        restoreScrollPosition(); // Restore saved scroll position
+        handleFragmentScroll(); // Handle fragment scrolling
+    });
+
+    // Debugging: Log when the script execution is complete
+    console.log("✅ Scroll restoration script execution complete.");
+
+    // Existing functionality for comments, replies, and forms
+    document.querySelectorAll(".comments").forEach(section => {
+        section.style.display = "block"; // Force open comments
+    });
 
     // Toggle comments and save state
     document.querySelectorAll('.toggle-comments').forEach(button => {
@@ -419,88 +468,5 @@
     document.querySelectorAll('.like-form, .comment-form, .reply-form').forEach(form => {
         form.onsubmit = checkLogin;
     });
-
-    // Save scroll position on page unload
-    window.addEventListener("beforeunload", saveScrollPosition);
-
-    window.addEventListener("load", function () {
-        if (window.location.hash) {
-            setTimeout(function () {
-                const targetElement = document.querySelector(window.location.hash);
-                if (targetElement) {
-                    targetElement.scrollIntoView({ behavior: "smooth" });
-                }
-                history.replaceState(null, null, window.location.pathname);
-            }, 200); // Slight delay to allow fragment scrolling
-        }
-
-        setTimeout(restoreScrollPosition, 400); // Delay restoring scroll position to let fragment scroll first
-    });
-
-    window.addEventListener("load", function () {
-        // Handle URL fragment scrolling separately
-        if (window.location.hash) {
-            setTimeout(function () {
-                const targetElement = document.querySelector(window.location.hash);
-                if (targetElement) {
-                    targetElement.scrollIntoView({ behavior: "smooth" });
-                }
-
-                // Reset the fragment **only after** the scroll happens
-                setTimeout(() => {
-                    history.replaceState(null, null, window.location.pathname);
-                }, 300);
-            }, 100);
-        }
-
-        // Restore previous scroll position separately
-        setTimeout(restoreScrollPosition, 100);
-    });
-        document.addEventListener("DOMContentLoaded", function () {
-        // Handle fragment scrolling when the page loads
-        handleFragmentScroll();
-    });
-
-    // Use pageshow for back/forward navigation
-    window.addEventListener("pageshow", function (event) {
-        // Handle fragment scrolling when navigating back/forward
-        handleFragmentScroll();
-    });
-
-    function handleFragmentScroll() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const commentId = urlParams.get("commentId");
-        const replyId = urlParams.get("replyId");
-
-        // Construct the target element's ID based on the query parameters or fragment
-        let targetId = "";
-        if (commentId) {
-            targetId = `comment-${commentId}`;
-        } else if (replyId) {
-            targetId = `reply-${replyId}`;
-        } else if (window.location.hash) {
-            targetId = window.location.hash.substring(1); // Remove the '#' from the fragment
-        }
-
-        if (targetId) {
-            setTimeout(() => {
-                const targetElement = document.getElementById(targetId);
-                if (targetElement) {
-                    // Scroll to the target element smoothly
-                    targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
-
-                    // Optionally add a highlight effect
-                    targetElement.classList.add("highlight");
-                    setTimeout(() => {
-                        targetElement.classList.remove("highlight");
-                    }, 3000);
-                }
-
-                // Clear the query parameters and fragment so subsequent loads don't use them
-                const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
-                history.replaceState({}, document.title, newUrl);
-            }, 300); // Slight delay to ensure the page has fully loaded
-        }
-    }
 </script>
 

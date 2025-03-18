@@ -375,15 +375,13 @@ namespace NewsLetterBanan.Controllers
 
 
         [HttpPost("User/LikeArticle")]
-        public async Task<IActionResult> LikeArticle(int articleId, string? source)
+        public async Task<IActionResult> LikeArticle(int articleId)
         {
             var userId = _userManager.GetUserId(User);  // Get the current user's ID from the session
 
-
             if (string.IsNullOrEmpty(userId))  // Check if the user is logged in
             {
-                // Handle the case where the user is not logged in, e.g., redirect to login page
-                return RedirectToAction("Login", "Account");
+                return Unauthorized(new { success = false, message = "User not logged in" });
             }
 
             var existingLike = await _dbContext.ArticleLikes
@@ -402,77 +400,50 @@ namespace NewsLetterBanan.Controllers
 
             await _dbContext.SaveChangesAsync();
 
-            if (!string.IsNullOrEmpty(source) && source == "GetAllArticles")
+            // Always increment views
+            var article = await _dbContext.Articles.FindAsync(articleId);
+            if (article != null)
             {
-                var article = await _dbContext.Articles.FindAsync(articleId);
-                if (article != null)
-                {
-                    await TryIncrementArticleView(article.Id);
-                }
+                await TryIncrementArticleView(article.Id);
             }
 
-            // Capture the referer URL
-            var referer = Request.Headers["Referer"].ToString();
-
-            // If the referer contains "/ViewArticle", redirect to the ViewArticle page with the articleId
-            if (referer.Contains("/ViewArticle", StringComparison.OrdinalIgnoreCase))
-            {
-                return RedirectToAction("ViewArticle", "Article", new { id = articleId });
-
-            }
-            else
-            {
-                // Otherwise, redirect back to the referer
-                return Redirect(referer);
-            }
+            return Ok(new { success = true, message = "Article like status updated" });
         }
 
-
-        [HttpPost("User/AddComment")]
-        public async Task<IActionResult> AddComment(int articleId, string content, string? source)
+        // Add Comment
+        [HttpPost("/User/AddComment")]
+        public async Task<IActionResult> AddComment([FromBody] CommentDto commentDto)
         {
             var userId = _userManager.GetUserId(User);
+
+            if (string.IsNullOrEmpty(commentDto.Content))
+            {
+                return BadRequest(new { success = false, message = "Comment content cannot be empty" });
+            }
+
             var newComment = new Comment
             {
-                ArticleId = articleId,
-                UserId = userId,
-                Content = content,
+                ArticleId = commentDto.ArticleId,
+                UserId = commentDto.UserId,
+                Content = commentDto.Content,
                 DateStamp = DateTime.Now
             };
 
             _dbContext.Comments.Add(newComment);
-
             await _dbContext.SaveChangesAsync();
 
-            if (!string.IsNullOrEmpty(source) && source == "GetAllArticles")
+            // Always increment views
+            var article = await _dbContext.Articles.FindAsync(commentDto.ArticleId);
+            if (article != null)
             {
-                var article = await _dbContext.Articles.FindAsync(articleId);
-                if (article != null)
-                {
-                    await TryIncrementArticleView(article.Id);
-                }
+                await TryIncrementArticleView(article.Id);
             }
 
-
-            // Get the referer URL.
-            var referer = Request.Headers["Referer"].ToString();
-
-            // If the referer contains "ViewArticle", assume it should redirect to that page.
-            if (referer.Contains("/ViewArticle", StringComparison.OrdinalIgnoreCase))
-            {
-                return RedirectToAction("ViewArticle", "Article", new { id = articleId, commentId = newComment.Id });
-
-
-            }
-            else
-            {
-                return Redirect(referer);
-            }
+            return Ok(new { success = true, commentId = newComment.Id, message = "Comment added successfully" });
         }
         // **2. Like a Comment**
-
         [HttpPost("User/LikeComment")]
-        public async Task<IActionResult> LikeComment(int commentId, string? source)
+        public async Task<IActionResult> LikeComment(int commentId)
         {
             var userId = _userManager.GetUserId(User);
 
@@ -483,7 +454,7 @@ namespace NewsLetterBanan.Controllers
             var comment = await _dbContext.Comments.FindAsync(commentId);
             if (comment == null)
             {
-                return NotFound("Comment not found.");
+                return NotFound(new { success = false, message = "Comment not found" });
             }
             var articleId = comment.ArticleId;
 
@@ -500,303 +471,144 @@ namespace NewsLetterBanan.Controllers
 
             await _dbContext.SaveChangesAsync();
 
-            if (!string.IsNullOrEmpty(source) && source == "GetAllArticles")
+            // Always increment views
+            var article = await _dbContext.Articles.FindAsync(articleId);
+            if (article != null)
             {
-                var article = await _dbContext.Articles.FindAsync(articleId);
-                if (article != null)
-                {
-                    await TryIncrementArticleView(article.Id);
-                }
+                await TryIncrementArticleView(article.Id);
             }
 
-            // --- Redirection Logic Start ---
-            // Capture the referer URL
-            var referer = Request.Headers["Referer"].ToString();
-
-            // If the referer contains "/ViewArticle", redirect to the ViewArticle page with the articleId
-            if (referer.Contains("/ViewArticle", StringComparison.OrdinalIgnoreCase))
-            {
-                return RedirectToAction("ViewArticle", "Article", new { id = articleId, commentId = commentId });
-
-            }
-            else
-            {
-                // Otherwise, redirect back to the referer
-                return Redirect(referer);
-            }
-            // --- Redirection Logic End ---
+            return Ok(new { success = true, message = "Comment like status updated" });
         }
 
 
 
-        [HttpPost("User/UpdateComment")]
-        public async Task<IActionResult> UpdateComment(int commentId, string newContent, string? source)
-        {
-            if (string.IsNullOrEmpty(newContent))
-            {
-                return BadRequest("Content cannot be empty.");
-            }
 
-            var userId = _userManager.GetUserId(User); // Get the logged-in user
-            var comment = await _dbContext.Comments.FindAsync(commentId);
-
-            if (comment == null)
-            {
-                return NotFound("Comment not found.");
-            }
-            var articleId = comment.ArticleId;
-
-            if (comment.UserId != userId)  // Ensure user owns the comment
-            {
-                return Forbid("You are not allowed to update this comment.");
-            }
-
-            comment.Content = newContent;
-            await _dbContext.SaveChangesAsync();
-
-            if (!string.IsNullOrEmpty(source) && source == "GetAllArticles")
-            {
-                var article = await _dbContext.Articles.FindAsync(articleId);
-                if (article != null)
-                {
-                    await TryIncrementArticleView(article.Id);
-                }
-            }
-
-            // Capture the referer URL
-            var referer = Request.Headers["Referer"].ToString();
-
-            // If the referer contains "/ViewArticle", redirect to the ViewArticle page with the articleId
-            if (referer.Contains("/ViewArticle", StringComparison.OrdinalIgnoreCase))
-            {
-                return RedirectToAction("ViewArticle", "Article", new { id = articleId, commentId = commentId });
-            }
-            else
-            {
-                // Otherwise, redirect back to the referer
-                return Redirect(referer);
-            }
-        }
-
-
-        [HttpPost("User/DeleteComment")]
-        public async Task<IActionResult> DeleteComment(int commentId, string? source)
-        {
-            var userId = _userManager.GetUserId(User); // Get the logged-in user
-            var comment = await _dbContext.Comments.FindAsync(commentId);
-
-            if (comment == null)
-            {
-                return NotFound("Comment not found.");
-            }
-            var articleId = comment.ArticleId;
-            if (comment.UserId != userId)  // Ensure user owns the comment
-            {
-                return Forbid("You are not allowed to delete this comment.");
-            }
-
-            _dbContext.Comments.Remove(comment);
-            await _dbContext.SaveChangesAsync();
-
-            if (!string.IsNullOrEmpty(source) && source == "GetAllArticles")
-            {
-                var article = await _dbContext.Articles.FindAsync(articleId);
-                if (article != null)
-                {
-                    await TryIncrementArticleView(article.Id);
-                }
-            }
-
-            // Capture the referer URL
-            var referer = Request.Headers["Referer"].ToString();
-
-            // If the referer contains "/ViewArticle", redirect to the ViewArticle page with the articleId
-            if (referer.Contains("/ViewArticle", StringComparison.OrdinalIgnoreCase))
-            {
-                return RedirectToAction("ViewArticle", "Article", new { id = articleId, commentId = commentId });
-            }
-            else
-            {
-                // Otherwise, redirect back to the referer
-                return Redirect(referer);
-            }
-        }
 
         // **5. Show Replies for a Comment**
 
-        [HttpPost("User/GetReplies")]
-        public async Task<IActionResult> GetReplies(int commentId)
+        [HttpPost("/User/AddReply")]
+        public async Task<IActionResult> AddReply([FromBody] ReplyDto replyDto)
         {
-            var replies = await _dbContext.CommentReplies
-                .Where(r => r.CommentId == commentId)
-                .Select(r => new
-                {
-                    r.Id,
-                    r.Content,
-                    r.UserId,
-                    r.DateStamp,
-                    LikeCount = r.CommentReplyLikes.Count
-                })
-                .ToListAsync();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Unauthorized();
 
-            return Json(replies);
-        }
+            // Retrieve the user entity with tracking
+            var user = await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null) return NotFound("User not found");
 
-        // **6. Add a Reply to a Comment**
-        [HttpPost("User/AddReply")]
-        public async Task<IActionResult> AddReply(int commentId, string content, string? source)
-        {
-            var userId = _userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(replyDto.Content))
+            {
+                return BadRequest(new { success = false, message = "Reply content cannot be empty" });
+            }
+
             var newReply = new CommentReply
             {
-                CommentId = commentId,
+                CommentId = replyDto.CommentId,
                 UserId = userId,
-                Content = content,
-                DateStamp = DateTime.Now
+                Content = replyDto.Content,
+                DateStamp = DateTime.UtcNow
             };
 
             _dbContext.CommentReplies.Add(newReply);
             await _dbContext.SaveChangesAsync();
 
-            // Fetch the comment to access the associated articleId
-            var comment = await _dbContext.Comments.FindAsync(commentId);
-            if (comment == null)
-            {
-                return NotFound("Comment not found.");
-            }
-            var articleId = comment.ArticleId;  // Get the associated articleId
+            // ✅ Reload the reply with User data
+            var savedReply = await _dbContext.CommentReplies
+                .Include(r => r.User)  // Ensure User is loaded
+                .FirstOrDefaultAsync(r => r.Id == newReply.Id);
 
-            if (!string.IsNullOrEmpty(source) && source == "GetAllArticles")
+            if (savedReply == null)
             {
-                var article = await _dbContext.Articles.FindAsync(articleId);
-                if (article != null)
-                {
-                    await TryIncrementArticleView(article.Id);
-                }
+                return BadRequest(new { success = false, message = "Failed to save reply" });
             }
 
-
-            // Get the referrer URL.
-            var referer = Request.Headers["Referer"].ToString();
-
-            // If the referrer is a ViewArticle page, append the replyId.
-            if (referer.Contains("/ViewArticle", StringComparison.OrdinalIgnoreCase))
+            return Ok(new
             {
-                return RedirectToAction("ViewArticle", "Article", new { id = articleId, commentId = commentId, replyId = newReply.Id });
-            }
-
-            return Redirect(referer);
+                success = true,
+                replyId = savedReply.Id,
+                userName = savedReply.User?.UserName ?? "Anonymous", // Ensure UserName is returned
+                message = "Reply added successfully"
+            });
         }
 
-        // **7. Like a Reply**
+
         [HttpPost("User/LikeReply")]
-        public async Task<IActionResult> LikeReply(int replyId, string? source)
+        public async Task<IActionResult> LikeReply(int replyId)
         {
             var userId = _userManager.GetUserId(User);
             var existingLike = await _dbContext.CommentReplyLikes
                 .FirstOrDefaultAsync(l => l.CommentReplyId == replyId && l.UserId == userId);
 
             if (existingLike == null)
+            {
                 _dbContext.CommentReplyLikes.Add(new CommentReplyLike { CommentReplyId = replyId, UserId = userId });
+            }
             else
+            {
                 _dbContext.CommentReplyLikes.Remove(existingLike);
+            }
 
             await _dbContext.SaveChangesAsync();
 
-            // Getting the ArticleId through the associated Comment
-            // Find the reply using the replyId
+            // Fetch the reply to get the associated comment and article
             var reply = await _dbContext.CommentReplies.FindAsync(replyId);
             if (reply == null)
             {
-                return NotFound("Reply not found.");
+                return NotFound(new { success = false, message = "Reply not found" });
             }
 
-            var comment = await _dbContext.Comments.FirstOrDefaultAsync(c => c.Id == reply.CommentId);
+            var comment = await _dbContext.Comments.FindAsync(reply.CommentId);
             if (comment == null)
             {
-                return NotFound("Comment not found.");
+                return NotFound(new { success = false, message = "Comment not found" });
             }
             var articleId = comment.ArticleId;
-            var commentId = comment.Id;
 
-            if (!string.IsNullOrEmpty(source) && source == "GetAllArticles")
+            // Always increment views
+            var article = await _dbContext.Articles.FindAsync(articleId);
+            if (article != null)
             {
-                var article = await _dbContext.Articles.FindAsync(articleId);
-                if (article != null)
-                {
-                    await TryIncrementArticleView(article.Id);
-                }
+                await TryIncrementArticleView(article.Id);
             }
 
-            // Capture the referer URL
-            var referer = Request.Headers["Referer"].ToString();
-
-            // If the referer contains "/ViewArticle", redirect to the ViewArticle page with the articleId
-            if (referer.Contains("/ViewArticle", StringComparison.OrdinalIgnoreCase))
-            {
-                return RedirectToAction("ViewArticle", "Article", new { id = articleId, commentId = commentId, replyId = replyId });
-
-            }
-            else
-            {
-                // Otherwise, redirect back to the referer
-                return Redirect(referer);
-            }
-
+            return Ok(new { success = true, message = "Reply like status updated" });
         }
-        // **8. Update a Reply**
         [HttpPost("User/UpdateReply")]
-        public async Task<IActionResult> UpdateReply(int replyId, string newContent, string? source)
+        public async Task<IActionResult> UpdateReply(int replyId, string newContent)
         {
             var userId = _userManager.GetUserId(User);
             var reply = await _dbContext.CommentReplies.FindAsync(replyId);
 
             if (reply == null)
             {
-                return NotFound("Reply not found.");
+                return NotFound(new { success = false, message = "Reply not found" });
             }
 
             if (reply.UserId != userId)
             {
-                return Forbid("You are not allowed to update this reply.");
+                return Forbid("You are not allowed to update this reply");
             }
 
             reply.Content = newContent;
             await _dbContext.SaveChangesAsync();
-            // Increment views ONLY if the source is "GetAllArticles"
 
-
-            var comment = await _dbContext.Comments.FirstOrDefaultAsync(c => c.Id == reply.CommentId);
+            // Fetch the comment to get the associated article
+            var comment = await _dbContext.Comments.FindAsync(reply.CommentId);
             if (comment == null)
             {
-                return NotFound("Comment not found.");
+                return NotFound(new { success = false, message = "Comment not found" });
             }
             var articleId = comment.ArticleId;
-            var commentId = comment.Id;
 
-            if (!string.IsNullOrEmpty(source) && source == "GetAllArticles")
+            // Always increment views
+            var article = await _dbContext.Articles.FindAsync(articleId);
+            if (article != null)
             {
-                var article = await _dbContext.Articles.FindAsync(articleId);
-                if (article != null)
-                {
-                    await TryIncrementArticleView(article.Id);
-                }
+                await TryIncrementArticleView(article.Id);
             }
 
-            // Capture the referer URL
-            var referer = Request.Headers["Referer"].ToString();
-
-            // If the referer contains "/ViewArticle", redirect to the ViewArticle page with the articleId
-            if (referer.Contains("/ViewArticle", StringComparison.OrdinalIgnoreCase))
-            {
-                return RedirectToAction("ViewArticle", "Article", new { id = articleId, commentId = commentId, replyId = replyId });
-            }
-            else
-            {
-                // Otherwise, redirect back to the referer
-                return Redirect(referer);
-            }
-
+            return Ok(new { success = true, message = "Reply updated successfully" });
         }
 
 
@@ -964,7 +776,88 @@ namespace NewsLetterBanan.Controllers
             await _signInManager.RefreshSignInAsync(user);
             return RedirectToAction("MyPage");
         }
+        // Get Comments for a specific Article
+        [HttpGet("/User/GetComments")]
+        public async Task<IActionResult> GetComments(int articleId)
+        {
+            var comments = await _dbContext.Comments
+                .Where(c => c.ArticleId == articleId)
+                .OrderByDescending(c => c.DateStamp)
+                .Select(c => new
+                {
+                    c.Id,
+                    c.Content,
+                    c.DateStamp,
+                    UserName = c.User.UserName
+                })
+                .ToListAsync();
 
+            if (!comments.Any())
+            {
+                return Ok(new { message = "No comments found." });
+            }
 
+            return Ok(comments);
+        }
+        [HttpGet("/User/GetReplies")]
+        public async Task<IActionResult> GetReplies(int commentId)
+        {
+            var replies = await _dbContext.CommentReplies
+                .Where(r => r.CommentId == commentId)
+                .Include(r => r.User)  // ✅ Ensure User entity is loaded
+                .OrderBy(r => r.DateStamp)
+                .Select(r => new
+                {
+                    Id = r.Id,
+                    Content = r.Content,
+                    DateStamp = r.DateStamp,
+                    UserName = r.User != null ? r.User.UserName : "Anonymous" // ✅ Ensure username is included
+                })
+                .ToListAsync();
+
+            return Ok(replies);
+        }
+
+        public class ReplyDTO
+        {
+            public int Id { get; set; }
+            public string Content { get; set; }
+        }
+
+        // DTO for liking a reply
+        public class LikeReplyDTO
+        {
+            public int ReplyId { get; set; }
+        }
+        public class CommentDto
+        {
+            public int ArticleId { get; set; }
+            public int CommentId { get; set; }
+            public string UserId { get; set; }
+            public string Content { get; set; }
+        }
+
+        // DTO for toggling likes
+        public class LikeDto
+        {
+            public int ArticleId { get; set; }
+            public string UserId { get; set; }
+        }
+
+        public class CommentLikeDto
+        {
+            public int CommentId { get; set; }
+            public string UserId { get; set; }
+        }
+
+        // DTO for replying to a comment
+        public class ReplyDto
+        {
+            public int CommentId { get; set; }
+            public string Content { get; set; }
+
+       
+
+        }
     }
 }

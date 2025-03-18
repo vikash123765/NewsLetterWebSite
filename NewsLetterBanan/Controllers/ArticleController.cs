@@ -67,7 +67,7 @@ namespace NewsLetterBanan.Controllers
         }
 
 
-     
+
         public async Task<IActionResult> GetAllArticles(int? categoryId, string? searchKeyword, string? sortBy, int? page = 1)
         {
             int pageSize = 5;
@@ -75,10 +75,11 @@ namespace NewsLetterBanan.Controllers
             if (currentPage < 1) currentPage = 1;
 
             ViewBag.Categories = await _context.Categories.ToListAsync();
+
             // Fetch all archived articles for the dropdown
             ViewBag.ArchivedArticles = await _context.Articles
                 .Where(a => a.IsArchived && a.IsApproved)
-                .Select(a => new { a.Id, a.Headline }) // Fetch only necessary fields
+                .Select(a => new { a.Id, a.Headline })
                 .ToListAsync();
 
             // Base query
@@ -89,12 +90,12 @@ namespace NewsLetterBanan.Controllers
                 .Include(a => a.Tags)
                 .Include(a => a.Comments)
                     .ThenInclude(c => c.User)
-                .Include(a => a.Comments)
-                    .ThenInclude(c => c.Replies)
+                         .Include(a => a.Comments)
+                    .ThenInclude(c => c.Replies)// Load replies for comments
+                        .ThenInclude(r => r.User)// Load user for comments
                 .Include(a => a.Comments)
                     .ThenInclude(c => c.CommentLikes)
-                 .Where(a => !a.Exclusive && !a.IsArchived && a.IsApproved) // 🔥 Excluding unapproved articles
-
+                .Where(a => !a.Exclusive && !a.IsArchived && a.IsApproved)
                 .AsQueryable();
 
             // Apply filtering
@@ -108,7 +109,7 @@ namespace NewsLetterBanan.Controllers
                 query = query.Where(a => a.Headline.Contains(searchKeyword) || a.Content.Contains(searchKeyword));
             }
 
-            // **Get total count before applying pagination**
+            // Get total count before applying pagination
             int totalArticles = await query.CountAsync();
 
             // Apply sorting BEFORE pagination
@@ -137,15 +138,11 @@ namespace NewsLetterBanan.Controllers
                     break;
             }
 
-            // Debugging: Log the sorted query
-            var sortedQuery = query.ToList();
-            Console.WriteLine("Sorted Query: " + string.Join(", ", sortedQuery.Select(a => a.Headline)));
-
             // Apply pagination AFTER sorting
             var allArticles = await query
                 .Skip((currentPage - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync(); // 🔥 Now we're executing the query only once!
+                .ToListAsync();
 
             if (totalArticles == 0)
             {
@@ -154,7 +151,7 @@ namespace NewsLetterBanan.Controllers
                 return View(new List<Article>());
             }
 
-            // **Sort comments and replies**
+            // Sort comments and replies
             foreach (var article in allArticles)
             {
                 if (article.Comments != null)
@@ -171,25 +168,50 @@ namespace NewsLetterBanan.Controllers
             }
 
             // Fetch statistics
-            ViewBag.CommentCounts = await _context.Comments
-                .GroupBy(c => c.ArticleId)
-                .ToDictionaryAsync(g => g.Key, g => g.Count());
+            ViewBag.CommentCounts = await _context.Articles
+                .GroupJoin(
+                    _context.Comments,
+                    article => article.Id,
+                    comment => comment.ArticleId,
+                    (article, comments) => new { ArticleId = article.Id, CommentCount = comments.Count() }
+                )
+                .ToDictionaryAsync(x => x.ArticleId, x => x.CommentCount);
 
-            ViewBag.LikeCounts = await _context.ArticleLikes
-                .GroupBy(l => l.ArticleId)
-                .ToDictionaryAsync(g => g.Key, g => g.Count());
+            ViewBag.LikeCounts = await _context.Articles
+                .GroupJoin(
+                    _context.ArticleLikes,
+                    article => article.Id,
+                    like => like.ArticleId,
+                    (article, likes) => new { ArticleId = article.Id, LikeCount = likes.Count() }
+                )
+                .ToDictionaryAsync(x => x.ArticleId, x => x.LikeCount);
 
-            ViewBag.ReplyCounts = await _context.CommentReplies
-                .GroupBy(r => r.CommentId)
-                .ToDictionaryAsync(g => g.Key, g => g.Count());
+            ViewBag.ReplyCounts = await _context.Comments
+                .GroupJoin(
+                    _context.CommentReplies,
+                    comment => comment.Id,
+                    reply => reply.CommentId,
+                    (comment, replies) => new { CommentId = comment.Id, ReplyCount = replies.Count() }
+                )
+                .ToDictionaryAsync(x => x.CommentId, x => x.ReplyCount);
 
-            ViewBag.CommentLikeCounts = await _context.CommentLikes
-                .GroupBy(cl => cl.CommentId)
-                .ToDictionaryAsync(g => g.Key, g => g.Count());
+            ViewBag.CommentLikeCounts = await _context.Comments
+                .GroupJoin(
+                    _context.CommentLikes,
+                    comment => comment.Id,
+                    like => like.CommentId,
+                    (comment, likes) => new { CommentId = comment.Id, LikeCount = likes.Count() }
+                )
+                .ToDictionaryAsync(x => x.CommentId, x => x.LikeCount);
 
-            ViewBag.ReplyLikeCounts = await _context.CommentReplyLikes
-                .GroupBy(rl => rl.CommentReplyId)
-                .ToDictionaryAsync(g => g.Key, g => g.Count());
+            ViewBag.ReplyLikeCounts = await _context.CommentReplies
+                .GroupJoin(
+                    _context.CommentReplyLikes,
+                    reply => reply.Id,
+                    like => like.CommentReplyId,
+                    (reply, likes) => new { ReplyId = reply.Id, LikeCount = likes.Count() }
+                )
+                .ToDictionaryAsync(x => x.ReplyId, x => x.LikeCount);
 
             ViewBag.ViewCounts = await _context.Articles
                 .ToDictionaryAsync(a => a.Id, a => a.Views);
