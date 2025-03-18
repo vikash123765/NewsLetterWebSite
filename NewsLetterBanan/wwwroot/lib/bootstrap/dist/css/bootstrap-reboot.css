@@ -11,11 +11,10 @@
   box-sizing: border-box;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    :root {
-        scroll-behavior: auto !important;
-    }
+html {
+    scroll-behavior: auto !important;
 }
+
 body {
   margin: 0;
   font-family: var(--bs-body-font-family);
