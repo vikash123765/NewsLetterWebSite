@@ -239,7 +239,7 @@
                 if (sessionStorage.getItem("scrollPosition") !== null) {
                     window.scrollTo({
                         top: sessionStorage.getItem("scrollPosition"),
-                        behavior: "smooth"
+                        behavior: "instant"
                     });
                     sessionStorage.removeItem("scrollPosition");
                 }
