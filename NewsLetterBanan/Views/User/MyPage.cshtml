@@ -354,7 +354,7 @@
                                         </div>
                                     }
 
-                                    <p class="small"><strong>Likes:</strong> @(ViewBag.LikeCounts.ContainsKey(item.Id) ? ViewBag.LikeCounts[item.Id] : 0)</p>
+
 
                                     <form method="post" class="like-form" data-article-id="@item.Id" onsubmit="likeArticle(event, @item.Id)">
                                         <input type="hidden" name="articleId" value="@item.Id" />
