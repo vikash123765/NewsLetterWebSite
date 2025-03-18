@@ -374,35 +374,34 @@ namespace NewsLetterBanan.Controllers
 
 
 
-        [HttpPost("User/LikeArticle")]
+        [HttpPost("/User/LikeArticle")]
         public async Task<IActionResult> LikeArticle(int articleId, string? source)
         {
-            var userId = _userManager.GetUserId(User);  // Get the current user's ID from the session
+            var userId = _userManager.GetUserId(User);
 
-
-            if (string.IsNullOrEmpty(userId))  // Check if the user is logged in
+            if (string.IsNullOrEmpty(userId))
             {
-                // Handle the case where the user is not logged in, e.g., redirect to login page
-                return RedirectToAction("Login", "Account");
+                return Json(new { success = false, message = "User not logged in" });
             }
 
             var existingLike = await _dbContext.ArticleLikes
                 .FirstOrDefaultAsync(l => l.ArticleId == articleId && l.UserId == userId);
 
+            bool isLiked = false;
+
             if (existingLike == null)
             {
-                // If the user hasn't liked the article yet, add the like
                 _dbContext.ArticleLikes.Add(new ArticleLike { ArticleId = articleId, UserId = userId });
+                isLiked = true;
             }
             else
             {
-                // If the user has already liked the article, remove the like
                 _dbContext.ArticleLikes.Remove(existingLike);
             }
-
+       
             await _dbContext.SaveChangesAsync();
-
-            if (!string.IsNullOrEmpty(source) && source == "GetAllArticles")
+           
+            if (!string.IsNullOrEmpty(source) && source == "GetAllArticles" || source == "HomePage"  )
             {
                 var article = await _dbContext.Articles.FindAsync(articleId);
                 if (article != null)
@@ -410,21 +409,15 @@ namespace NewsLetterBanan.Controllers
                     await TryIncrementArticleView(article.Id);
                 }
             }
+            int likeCount = await _dbContext.ArticleLikes.CountAsync(l => l.ArticleId == articleId);
 
-            // Capture the referer URL
+            if (!string.IsNullOrEmpty(source) && source.Equals("HomePage", StringComparison.OrdinalIgnoreCase))
+            {
+                return Json(new { success = true, isLiked, likeCount });
+            }
+
             var referer = Request.Headers["Referer"].ToString();
-
-            // If the referer contains "/ViewArticle", redirect to the ViewArticle page with the articleId
-            if (referer.Contains("/ViewArticle", StringComparison.OrdinalIgnoreCase))
-            {
-                return RedirectToAction("ViewArticle", "Article", new { id = articleId });
-
-            }
-            else
-            {
-                // Otherwise, redirect back to the referer
-                return Redirect(referer);
-            }
+            return Redirect(referer);
         }
 
 
