@@ -57,13 +57,17 @@
                                     }
 
                                     <p class="small"><strong>Likes:</strong> @(ViewBag.LikeCounts.ContainsKey(item.Id) ? ViewBag.LikeCounts[item.Id] : 0)</p>
-                                    <!-- Like Article Button -->
-                                    <form method="post" asp-action="LikeArticle" asp-controller="User" class="like-form" onsubmit="return checkLogin(event)">
+                                    <form method="post" class="like-form" data-article-id="@item.Id" onsubmit="likeArticle(event, @item.Id)">
                                         <input type="hidden" name="articleId" value="@item.Id" />
-
-                                        <input type="hidden" name="source" value="GetAllArticles" />
-                                        <button type="submit" class="btn btn-sm btn-outline-primary"> @(ViewBag.IsLiked.ContainsKey(item.Id) ? "Unlike" : "Like")</button>
+                                        <input type="hidden" name="source" value="HomePage" />
+                                        <button type="submit" class="btn btn-sm btn-outline-primary like-btn">
+                                            @(ViewBag.IsLiked.ContainsKey(item.Id) ? "Unlike" : "Like")
+                                        </button>
+                                        <span class="like-count">
+                                            @(ViewBag.LikeCounts.ContainsKey(item.Id) ? ViewBag.LikeCounts[item.Id] : 0)
+                                        </span>
                                     </form>
+
                                     <p class="small"><strong>Comments:</strong> @(ViewBag.CommentCounts.ContainsKey(item.Id) ? ViewBag.CommentCounts[item.Id] : 0)</p>
                                     <p class="small"><strong>Views:</strong> @(ViewBag.ViewCounts.ContainsKey(item.Id) ? ViewBag.ViewCounts[item.Id] : 0)</p>
                                     <p class="small"><strong>Published:</strong> @item.DateStamp.ToString("MMMM dd, yyyy")</p>
@@ -113,14 +117,19 @@
                                         </div>
                                     }
 
-                                    <p class="small"><strong>Likes:</strong> @(ViewBag.LikeCounts.ContainsKey(item.Id) ? ViewBag.LikeCounts[item.Id] : 0)</p>
+                              
                                     <!-- Like Article Button -->
-                                    <form method="post" asp-action="LikeArticle" asp-controller="User" class="like-form" onsubmit="return checkLogin(event)">
+                                    <form method="post" class="like-form" data-article-id="@item.Id" onsubmit="likeArticle(event, @item.Id)">
                                         <input type="hidden" name="articleId" value="@item.Id" />
-
-                                        <input type="hidden" name="source" value="GetAllArticles" />
-                                        <button type="submit" class="btn btn-sm btn-outline-primary"> @(ViewBag.IsLiked.ContainsKey(item.Id) ? "Unlike" : "Like")</button>
+                                        <input type="hidden" name="source" value="HomePage" />
+                                        <button type="submit" class="btn btn-sm btn-outline-primary like-btn">
+                                            @(ViewBag.IsLiked.ContainsKey(item.Id) ? "Unlike" : "Like")
+                                        </button>
+                                        <span class="like-count">
+                                            @(ViewBag.LikeCounts.ContainsKey(item.Id) ? ViewBag.LikeCounts[item.Id] : 0)
+                                        </span>
                                     </form>
+
                                     <p class="small"><strong>Comments:</strong> @(ViewBag.CommentCounts.ContainsKey(item.Id) ? ViewBag.CommentCounts[item.Id] : 0)</p>
                                     <p class="small"><strong>Views:</strong> @(ViewBag.ViewCounts.ContainsKey(item.Id) ? ViewBag.ViewCounts[item.Id] : 0)</p>
                                     <p class="small"><strong>Published:</strong> @item.DateStamp.ToString("MMMM dd, yyyy")</p>
@@ -170,14 +179,22 @@
                                         </div>
                                     }
 
-                                    <p class="small"><strong>Likes:</strong> @(ViewBag.LikeCounts.ContainsKey(item.Id) ? ViewBag.LikeCounts[item.Id] : 0)</p>
-                                    <!-- Like Article Button -->
-                                    <form method="post" asp-action="LikeArticle" asp-controller="User" class="like-form" onsubmit="return checkLogin(event)">
+                                  
+                                    <form method="post" class="like-form" data-article-id="@item.Id" onsubmit="likeArticle(event, @item.Id)">
                                         <input type="hidden" name="articleId" value="@item.Id" />
+                                        <input type="hidden" name="source" value="HomePage" />
+                                        <button type="submit" class="btn btn-sm btn-outline-primary like-btn">
+                                            @(ViewBag.IsLiked.ContainsKey(item.Id) ? "Unlike" : "Like")
 
-                                        <input type="hidden" name="source" value="GetAllArticles" />
-                                        <button type="submit" class="btn btn-sm btn-outline-primary"> @(ViewBag.IsLiked.ContainsKey(item.Id) ? "Unlike" : "Like")</button>
+                                        </button>
+                                        <span class="like-count">
+                                            @(ViewBag.LikeCounts.ContainsKey(item.Id) ? ViewBag.LikeCounts[item.Id] : 0)
+                                        </span>
+                                     
+
                                     </form>
+
+                           
                                     <p class="small"><strong>Comments:</strong> @(ViewBag.CommentCounts.ContainsKey(item.Id) ? ViewBag.CommentCounts[item.Id] : 0)</p>
                                     <p class="small"><strong>Views:</strong> @(ViewBag.ViewCounts.ContainsKey(item.Id) ? ViewBag.ViewCounts[item.Id] : 0)</p>
                                     <p class="small"><strong>Published:</strong> @item.DateStamp.ToString("MMMM dd, yyyy")</p>
@@ -234,21 +251,70 @@
 @section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Scroll restoration
-            setTimeout(function () {
-                if (sessionStorage.getItem("scrollPosition") !== null) {
-                    window.scrollTo({
-                        top: sessionStorage.getItem("scrollPosition"),
-                        behavior: "instant"
-                    });
-                    sessionStorage.removeItem("scrollPosition");
-                }
-            }, 300);
+            // Save scroll position before reload
+            function saveScrollPosition() {
+                sessionStorage.setItem("scrollPosition", window.scrollY);
+            }
 
-            document.querySelectorAll("form").forEach(form => {
-                form.addEventListener("submit", function () {
-                    sessionStorage.setItem("scrollPosition", window.scrollY);
+            // Restore scroll position after reload
+            function restoreScrollPosition() {
+                const scrollPosition = sessionStorage.getItem("scrollPosition");
+                if (scrollPosition !== null) {
+                    window.scrollTo({ top: scrollPosition, behavior: "instant" });
+                }
+            }
+
+            // Run scroll restoration after page load
+            restoreScrollPosition();
+
+            document.querySelectorAll(".like-form").forEach(form => {
+                form.addEventListener("submit", function (event) {
+                    event.preventDefault(); // Prevent full page reload
+
+                    var formData = new FormData(this);
+                    var articleId = this.getAttribute("data-article-id");
+
+                    fetch("/User/LikeArticle", {
+                        method: "POST",
+                        body: formData,
+                        headers: { "X-Requested-With": "XMLHttpRequest" }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Update like button text
+                                let button = this.querySelector(".like-btn");
+                                button.textContent = data.isLiked ? "Unlike" : "Like";
+
+                                // Update like count
+                                let likeCountElement = this.closest(".card-body").querySelector(".like-count");
+                                if (likeCountElement) {
+                                    likeCountElement.textContent = `Likes: ${data.likeCount}`;
+                                }
+                            } else {
+                                alert(data.message);
+                            }
+                        })
+                        .catch(error => console.error("Error:", error));
                 });
+
+            });
+
+
+            // Login check before performing actions
+            function checkLogin(event) {
+                var isLoggedIn = @Json.Serialize(isLoggedIn);
+                if (!isLoggedIn) {
+                    event.preventDefault();
+                    alert("You need to log in to perform this action!");
+                    return false;
+                }
+                return true;
+            }
+
+            // Apply login check to forms
+            document.querySelectorAll('.like-form, .comment-form, .reply-form, .delete-form').forEach(form => {
+                form.onsubmit = checkLogin;
             });
 
             // Toggle functionality for side panel widgets
@@ -270,20 +336,9 @@
                 });
             });
         });
-
-        // Check login before performing actions
-        function checkLogin(event) {
-            var isLoggedIn = @Json.Serialize(isLoggedIn);
-            if (!isLoggedIn) {
-                event.preventDefault();
-                alert("You need to log in to perform this action!");
-                return false;
-            }
-            return true;
-        }
-
     </script>
 }
+
 
 <style>
     .img-article {

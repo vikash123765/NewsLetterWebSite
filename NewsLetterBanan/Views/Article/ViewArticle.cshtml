@@ -279,15 +279,33 @@
     </div>
 </div>
 
-
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        // Ensure comments are always visible
-        document.querySelectorAll(".comments").forEach(section => {
-            section.style.display = "block"; // Force open comments
+        console.log("Ensuring all comments & replies are visible on page load...");
+
+        // 🔹 FORCE OPEN ALL COMMENTS
+        document.querySelectorAll(".comments-section").forEach(section => {
+            section.style.display = "block"; // Ensure comments are always visible
         });
 
-        // Ensure comments remain open after reload
+        // 🔹 FORCE OPEN ALL REPLIES
+        document.querySelectorAll(".replies").forEach(replySection => {
+            replySection.style.display = "block"; // Ensure replies are always visible
+        });
+
+        // 🔹 Disable "Show Comments" button (since comments are always open)
+        document.querySelectorAll(".toggle-comments").forEach(button => {
+            button.disabled = true;
+        });
+
+        // 🔹 Disable "Show Replies" button (since replies are always open)
+        document.querySelectorAll(".toggle-replies").forEach(button => {
+            button.disabled = true;
+        });
+
+        console.log("All comments and replies are now forced open.");
+
+        // 🔥 PRESERVE COMMENT AND REPLY OPEN STATES AFTER RELOAD
         document.querySelectorAll('.toggle-comments').forEach(button => {
             const articleId = button.getAttribute('data-article-id');
             const commentsSection = document.getElementById('comments-' + articleId);
@@ -301,12 +319,12 @@
                 const isOpen = commentsSection.style.display === "block";
                 commentsSection.style.display = isOpen ? "none" : "block";
 
-                // Save the state to localStorage
+                // Save state to localStorage
                 localStorage.setItem("openComments-" + articleId, !isOpen ? "true" : "false");
             });
         });
 
-        // Ensure replies remain open after reload
+        // 🔥 PRESERVE REPLY OPEN STATES AFTER RELOAD
         document.querySelectorAll('.toggle-replies').forEach(button => {
             const commentId = button.getAttribute('data-comment-id');
             const replySection = document.getElementById('replies-' + commentId);
@@ -320,12 +338,12 @@
                 const isOpen = replySection.style.display === "block";
                 replySection.style.display = isOpen ? "none" : "block";
 
-                // Save the state to localStorage
+                // Save state to localStorage
                 localStorage.setItem("openReplies-" + commentId, !isOpen ? "true" : "false");
             });
         });
 
-        // Prevent scrolling manipulation and reload instantly after form submission
+        // 🔥 PREVENT SCROLLING MANIPULATION & RELOAD INSTANTLY AFTER FORM SUBMISSION
         document.querySelectorAll("form").forEach(form => {
             form.addEventListener("submit", function (event) {
                 event.preventDefault(); // Prevent default form submission
@@ -365,7 +383,7 @@
             });
         });
 
-        // 🔥 Fix: Toggle edit form visibility using event delegation
+        // 🔥 FIX: TOGGLE EDIT FORM VISIBILITY USING EVENT DELEGATION
         document.addEventListener("click", function (event) {
             // Edit Comment
             if (event.target.matches(".edit-comment-btn")) {
@@ -386,7 +404,7 @@
             }
         });
 
-        // Login check before performing actions
+        // 🔥 LOGIN CHECK BEFORE PERFORMING ACTIONS
         function checkLogin(event) {
             var isLoggedIn = @Json.Serialize(isLoggedIn);
             if (!isLoggedIn) {
@@ -397,11 +415,12 @@
             return true;
         }
 
-        // Apply login check to like, comment, reply, and delete forms
+        // 🔥 APPLY LOGIN CHECK TO LIKE, COMMENT, REPLY, AND DELETE FORMS
         document.querySelectorAll('.like-form, .comment-form, .reply-form, .delete-form').forEach(form => {
             form.onsubmit = checkLogin;
         });
+
     });
 
 
-</script>
+</script> 
