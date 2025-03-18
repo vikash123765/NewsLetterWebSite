@@ -374,8 +374,8 @@ namespace NewsLetterBanan.Controllers
 
 
 
-        [HttpPost("User/LikeArticle")]
-        public async Task<IActionResult> LikeArticle(int articleId)
+        [HttpPost("/User/ToggleArticleLike")]
+        public async Task<IActionResult> ToggleArticleLike([FromBody] LikeDto likeDto)
         {
             var userId = _userManager.GetUserId(User);  // Get the current user's ID from the session
 
@@ -385,12 +385,12 @@ namespace NewsLetterBanan.Controllers
             }
 
             var existingLike = await _dbContext.ArticleLikes
-                .FirstOrDefaultAsync(l => l.ArticleId == articleId && l.UserId == userId);
+                .FirstOrDefaultAsync(l => l.ArticleId == likeDto.ArticleId && l.UserId == userId);
 
             if (existingLike == null)
             {
                 // If the user hasn't liked the article yet, add the like
-                _dbContext.ArticleLikes.Add(new ArticleLike { ArticleId = articleId, UserId = userId });
+                _dbContext.ArticleLikes.Add(new ArticleLike { ArticleId = likeDto.ArticleId, UserId = userId });
             }
             else
             {
@@ -401,7 +401,7 @@ namespace NewsLetterBanan.Controllers
             await _dbContext.SaveChangesAsync();
 
             // Always increment views
-            var article = await _dbContext.Articles.FindAsync(articleId);
+            var article = await _dbContext.Articles.FindAsync(likeDto.ArticleId);
             if (article != null)
             {
                 await TryIncrementArticleView(article.Id);
@@ -442,16 +442,16 @@ namespace NewsLetterBanan.Controllers
             return Ok(new { success = true, commentId = newComment.Id, message = "Comment added successfully" });
         }
         // **2. Like a Comment**
-        [HttpPost("User/LikeComment")]
-        public async Task<IActionResult> LikeComment(int commentId)
+        [HttpPost("/User/ToggleCommentLike")]
+        public async Task<IActionResult> ToggleCommentLike([FromBody] CommentLikeDto commentLikeDto)
         {
             var userId = _userManager.GetUserId(User);
 
             var existingLike = await _dbContext.CommentLikes
-                .FirstOrDefaultAsync(l => l.CommentId == commentId && l.UserId == userId);
+                .FirstOrDefaultAsync(l => l.CommentId == commentLikeDto.CommentId && l.UserId == userId);
 
             // Find the comment to get its ArticleId
-            var comment = await _dbContext.Comments.FindAsync(commentId);
+            var comment = await _dbContext.Comments.FindAsync(commentLikeDto.CommentId);
             if (comment == null)
             {
                 return NotFound(new { success = false, message = "Comment not found" });
@@ -461,7 +461,7 @@ namespace NewsLetterBanan.Controllers
             if (existingLike == null)
             {
                 // Add a new like if it doesn't exist
-                _dbContext.CommentLikes.Add(new CommentLike { CommentId = commentId, UserId = userId });
+                _dbContext.CommentLikes.Add(new CommentLike { CommentId = commentLikeDto.CommentId, UserId = userId });
             }
             else
             {
@@ -481,9 +481,50 @@ namespace NewsLetterBanan.Controllers
             return Ok(new { success = true, message = "Comment like status updated" });
         }
 
+        // Endpoint to fetch like counts, comment counts, and reply counts
+        [HttpGet("/User/GetLikeCounts")]
+        // Fetch like counts for both comments and replies
+        public async Task<IActionResult> GetLikeCounts()
+        {
+            // Fetch comments with their like counts
+            var commentsWithLikeCounts = await _dbContext.Comments
+                .Select(c => new
+                {
+                    CommentId = c.Id,
+                    CommentLikes = c.CommentLikes,  // Like count for the comment
+                                             // Fetching like counts for replies of each comment
+                    ReplyLikes = c.Replies.Select(r => r.CommentReplyLikes).ToList()
+                })
+                .ToListAsync();
+
+            // Output the result (this could be logging or returning data to the client)
+            foreach (var comment in commentsWithLikeCounts)
+            {
+                Console.WriteLine($"Comment ID: {comment.CommentId}, Likes: {comment.CommentLikes}");
+
+                // Output reply likes
+                foreach (var replyLike in comment.ReplyLikes)
+                {
+                    Console.WriteLine($"  Reply Like Count: {replyLike}");
+                }
+            }
+
+            // Return as a response if needed (as JSON)
+            return Ok(commentsWithLikeCounts);
+        }
 
 
 
+        // Get Article Likes
+        [HttpGet("/User/GetArticleLikes")]
+        public async Task<IActionResult> GetArticleLikes(int articleId)
+        {
+            int likeCount = await _dbContext.ArticleLikes
+                .Where(l => l.ArticleId == articleId)
+                .CountAsync();
+
+            return Ok(new { likes = likeCount });
+        }
 
         // **5. Show Replies for a Comment**
 

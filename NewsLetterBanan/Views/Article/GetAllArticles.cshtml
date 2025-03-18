@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Mvc.Rendering
+﻿﻿@using Microsoft.AspNetCore.Mvc.Rendering
 @model IEnumerable<NewsLetterBanan.Data.Article>
 
 @{
@@ -226,27 +226,29 @@
                      commentCountElement.innerText = comments.length; // Update comment count
                      comments.forEach(comment => {
                          commentsContainer.innerHTML += `
-                                      <div class="comment-box border p-2 mb-2">
-                                          <p><strong>${comment.userName}</strong> - ${new Date(comment.dateStamp).toLocaleString()}</p>
-                                          <p>${comment.content}</p>
-                                          <p>Replies: <span id="replyCount-${comment.id}">0</span></p>
-                                          <button class="btn btn-secondary btn-sm" onclick="toggleReplies(${comment.id})">Show Replies</button>
-                                            <button class="btn btn-info btn-sm" onclick="toggleCommentLike(${comment.id})">Like Comment</button>
-                                          <button class="btn btn-danger btn-sm" onclick="deleteComment(${comment.id}, ${articleId})">Delete</button>
-                                          <button class="btn btn-warning btn-sm" onclick="editComment(${comment.id}, '${comment.content}', ${articleId})">Edit</button>
+                                           <div class="comment-box border p-2 mb-2">
+                                               <p><strong>${comment.userName}</strong> - ${new Date(comment.dateStamp).toLocaleString()}</p>
+                                               <p>${comment.content}</p>
+                                                 <p>Likes: <span id="commentLikeCount-${comment.id}">0</span></p>
+                                               <p>Replies: <span id="replyCount-${comment.id}">0</span></p>
 
-                                          <!-- Replies Section -->
-                                          <div id="replySection-${comment.id}" class="reply-section mt-2" style="display: none;">
-                                              <div id="repliesContainer-${comment.id}">Loading replies...</div>
+                                               <button class="btn btn-secondary btn-sm" onclick="toggleReplies(${comment.id})">Show Replies</button>
+                                                 <button class="btn btn-info btn-sm" onclick="toggleCommentLike(${comment.id})">Like Comment</button>
+                                               <button class="btn btn-danger btn-sm" onclick="deleteComment(${comment.id}, ${articleId})">Delete</button>
+                                               <button class="btn btn-warning btn-sm" onclick="editComment(${comment.id}, '${comment.content}', ${articleId})">Edit</button>
 
-                                              <!-- Add Reply Form -->
-                                              <div class="mt-2">
-                                                  <textarea id="replyContent-${comment.id}" class="form-control" placeholder="Write a reply..."></textarea>
-                                                  <button class="btn btn-success btn-sm mt-2" onclick="addReply(${comment.id})">Reply</button>
-                                              </div>
-                                          </div>
-                                      </div>
-                                  `;
+                                               <!-- Replies Section -->
+                                               <div id="replySection-${comment.id}" class="reply-section mt-2" style="display: none;">
+                                                   <div id="repliesContainer-${comment.id}">Loading replies...</div>
+
+                                                   <!-- Add Reply Form -->
+                                                   <div class="mt-2">
+                                                       <textarea id="replyContent-${comment.id}" class="form-control" placeholder="Write a reply..."></textarea>
+                                                       <button class="btn btn-success btn-sm mt-2" onclick="addReply(${comment.id})">Reply</button>
+                                                   </div>
+                                               </div>
+                                           </div>
+                                       `;
                      });
                      // Fetch and display like count for each comment
                      GetCommentLikeCounts(comment.id);
@@ -273,13 +275,13 @@
                              replyCountElement.innerText = replyData.replies.length; // Update reply count
                              replyData.replies.forEach(reply => {
                                  repliesContainer.innerHTML += `
-                          <div class="border p-2 mb-2">
-                            <p><strong>${reply.userName}</strong> - ${new Date(reply.dateStamp).toLocaleString()}</p>
-                            <p>${reply.content}</p>
-                            <button class="btn btn-danger btn-sm" onclick="deleteReply(${reply.id}, ${reply.commentId})">Delete Reply</button>
-                            <button class="btn btn-warning btn-sm" onclick="editReply(${reply.id}, '${reply.content}', ${reply.commentId})">Edit Reply</button>
-                          </div>
-                        `;
+                               <div class="border p-2 mb-2">
+                                 <p><strong>${reply.userName}</strong> - ${new Date(reply.dateStamp).toLocaleString()}</p>
+                                 <p>${reply.content}</p>
+                                 <button class="btn btn-danger btn-sm" onclick="deleteReply(${reply.id}, ${reply.commentId})">Delete Reply</button>
+                                 <button class="btn btn-warning btn-sm" onclick="editReply(${reply.id}, '${reply.content}', ${reply.commentId})">Edit Reply</button>
+                               </div>
+                             `;
                              });
                          }
                      }
@@ -376,15 +378,15 @@
                          const content = reply.content ? reply.content : '[No content]';
 
                          repliesContainer.innerHTML += `
-                             <div id="reply-${reply.id}" class="border p-2 mb-2">
-                                 <p><strong>${userName}</strong> - ${dateStamp}</p>
-                                 <p>${content}</p>
-                                 <button class="btn btn-warning btn-sm" onclick="editReply(${reply.id}, '${content}')">Edit</button>
-                                 <button class="btn btn-danger btn-sm" onclick="deleteReply(${reply.id})">Delete</button>
-                                 <button class="btn btn-info btn-sm" onclick="likeReply(${reply.id})">Like</button>
-                                 <span id="likeCount-${reply.id}">${reply.likes || 0}</span>
-                             </div>
-                         `;
+                                  <div id="reply-${reply.id}" class="border p-2 mb-2">
+                                      <p><strong>${userName}</strong> - ${dateStamp}</p>
+                                      <p>${content}</p>
+                                      <button class="btn btn-warning btn-sm" onclick="editReply(${reply.id}, '${content}')">Edit</button>
+                                      <button class="btn btn-danger btn-sm" onclick="deleteReply(${reply.id})">Delete</button>
+                                      <button class="btn btn-info btn-sm" onclick="likeReply(${reply.id})">Like</button>
+                                      <span id="likeCount-${reply.id}">${reply.likes || 0}</span>
+                                  </div>
+                              `;
                      });
                  }
              });
@@ -451,4 +453,4 @@
              });
      }
 
-     </script>
+</script>
