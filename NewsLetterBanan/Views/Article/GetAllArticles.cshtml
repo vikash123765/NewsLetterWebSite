@@ -208,7 +208,7 @@
                 <!-- Likes -->
                 <p class="card-text small"><strong>Likes:</strong> @(ViewBag.LikeCounts.ContainsKey(item.Id) ? ViewBag.LikeCounts[item.Id] : 0)</p>
                 <!-- Like Article Button -->
-                <form method="post" asp-action="LikeArticle" asp-controller="User" class="like-form d-inline" onsubmit="return checkLogin(event)">
+                <form method="post" asp-action="LikeArticle" asp-controller="User" class="like-form d-inline">
                     <input type="hidden" name="articleId" value="@item.Id" />
                     <input type="hidden" name="source" value="GetAllArticles" />
                     <button type="submit" class="btn btn-sm btn-outline-primary"> @(ViewBag.IsLiked.ContainsKey(item.Id) ? "Unlike" : "Like")</button>
@@ -241,7 +241,7 @@
                     <!-- Comments Section -->
                     <div id="comments-@item.Id" class="mt-3" style="display: none;">
                         <!-- Add Comment Form -->
-                        <form method="post" asp-action="AddComment" asp-controller="User" class="mt-3" onsubmit="return checkLogin(event)">
+                        <form method="post" asp-action="AddComment" asp-controller="User" class="comment-form mt-3">
                             <input type="hidden" name="articleId" value="@item.Id" />
                             <input type="hidden" name="source" value="GetAllArticles" />
                             <textarea name="content" class="form-control mb-2 small" placeholder="Write a comment..." required></textarea>
@@ -263,7 +263,7 @@
                                     <!-- Comment Likes -->
                                     <p class="card-text small"><strong>Likes:</strong> @(ViewBag.CommentLikeCounts.ContainsKey(comment.Id) ? ViewBag.CommentLikeCounts[comment.Id] : 0)</p>
                                     <!-- Like Comment Button -->
-                                    <form method="post" asp-action="LikeComment" asp-controller="User" class="d-inline">
+                                    <form method="post" asp-action="LikeComment" asp-controller="User" class="like-form d-inline">
                                         <input type="hidden" name="commentId" value="@comment.Id" />
                                         <input type="hidden" name="source" value="GetAllArticles" />
                                         <button type="submit" class="btn btn-sm @(ViewBag.IsCommentLiked.ContainsKey(comment.Id) ? "btn-danger" : "btn-outline-primary")">
@@ -304,7 +304,7 @@
                                                     <p class="card-text small"><small class="text-muted">By: @(reply.User != null ? $"{reply.User.FirstName} {reply.User.LastName}" : "Anonymous") | @reply.DateStamp</small></p>
                                                     <p class="card-text small"><strong>Likes:</strong> @(ViewBag.ReplyLikeCounts.ContainsKey(reply.Id) ? ViewBag.ReplyLikeCounts[reply.Id] : 0)</p>
                                                     <!-- Like Reply Button -->
-                                                    <form method="post" asp-action="LikeReply" asp-controller="User" class="d-inline">
+                                                    <form method="post" asp-action="LikeReply" asp-controller="User" class="like-form d-inline">
                                                         <input type="hidden" name="replyId" value="@reply.Id" />
                                                         <input type="hidden" name="source" value="GetAllArticles" />
                                                         <button type="submit" class="btn btn-sm @(ViewBag.IsReplyLiked.ContainsKey(reply.Id) ? "btn-danger" : "btn-outline-danger")">
@@ -336,7 +336,7 @@
                                             </div>
                                         }
                                         <!-- Add Reply Form -->
-                                        <form method="post" asp-action="AddReply" asp-controller="User" class="mt-3">
+                                        <form method="post" asp-action="AddReply" asp-controller="User" class="reply-form mt-3" >
                                             <input type="hidden" name="commentId" value="@comment.Id" />
                                             <input type="hidden" name="source" value="GetAllArticles" />
                                             <textarea name="content" class="form-control mb-2 small" placeholder="Write a reply..." required></textarea>
