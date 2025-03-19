@@ -30,11 +30,13 @@
     <div id="liked-articles-section" class="mb-5">
         <h3 class="mb-4">Your Liked Articles</h3>
         @if (Model.UserLikedArticles.Any())
+
         {
             <div class="card">
                 <div class="card-body">
                     <ul class="list-group list-group-flush">
                         @foreach (var article in Model.UserLikedArticles)
+
                         {
                             <li class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-center">
                                 <div class="mb-2 mb-md-0">
@@ -58,7 +60,9 @@
                 </div>
             </div>
         }
+
         else
+
         {
             <p class="text-muted">You haven't liked any articles yet.</p>
         }
@@ -68,11 +72,13 @@
     <div id="comments-section" class="mb-5">
         <h3 class="mb-4">Your Comments</h3>
         @if (Model.UserComments.Any())
+
         {
             <div class="card">
                 <div class="card-body">
                     <ul class="list-group list-group-flush">
                         @foreach (var comment in Model.UserComments)
+
                         {
                             <li id="comment-@comment.Id" class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-center">
                                 <div class="mb-2 mb-md-0">
@@ -112,7 +118,9 @@
                 </div>
             </div>
         }
+
         else
+
         {
             <p class="text-muted">You haven't made any comments yet.</p>
         }
@@ -122,11 +130,13 @@
     <div id="liked-comments-section" class="mb-5">
         <h3 class="mb-4">Your Liked Comments</h3>
         @if (Model.UserCommentsLikes.Any())
+
         {
             <div class="card">
                 <div class="card-body">
                     <ul class="list-group list-group-flush">
                         @foreach (var comment in Model.UserCommentsLikes)
+
                         {
                             <li class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-center">
                                 <div class="mb-2 mb-md-0">
@@ -158,7 +168,9 @@
                 </div>
             </div>
         }
+
         else
+
         {
             <p class="text-muted">You haven't liked any comments yet.</p>
         }
@@ -168,11 +180,13 @@
     <div id="comment-replies-section" class="mb-5">
         <h3 class="mb-4">Your Comment Replies</h3>
         @if (Model.UserCommentReplies.Any())
+
         {
             <div class="card">
                 <div class="card-body">
                     <ul class="list-group list-group-flush">
                         @foreach (var reply in Model.UserCommentReplies)
+
                         {
                             <li class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-center">
                                 <div class="mb-2 mb-md-0">
@@ -220,7 +234,9 @@
                 </div>
             </div>
         }
+
         else
+
         {
             <p class="text-muted">You haven't made any comment replies yet.</p>
         }
@@ -230,11 +246,13 @@
     <div id="liked-replies-section" class="mb-5">
         <h3 class="mb-4">Your Liked Replies</h3>
         @if (Model.UserLikedCommentReplies.Any())
+
         {
             <div class="card">
                 <div class="card-body">
                     <ul class="list-group list-group-flush">
                         @foreach (var reply in Model.UserLikedCommentReplies)
+
                         {
                             <li class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-center">
                                 <div class="mb-2 mb-md-0">
@@ -275,13 +293,16 @@
                 </div>
             </div>
         }
+
         else
+
         {
             <p class="text-muted">You haven't liked any replies yet.</p>
         }
     </div>
 
     @if (!User.IsInRole("Admin"))
+
     {
         <!-- Subscription Button -->
         <div class="text-center mb-5">
@@ -292,6 +313,7 @@
         <div class="mb-5">
             <h3 class="mb-4">Your Subscriptions</h3>
             @if (Model.Subscriptions.Any())
+
             {
                 <div class="card">
                     <div class="card-body">
@@ -308,7 +330,9 @@
                     </div>
                 </div>
             }
+
             else
+
             {
                 <p class="text-muted">You are not subscribed to any plans.</p>
             }
@@ -318,9 +342,11 @@
         <div id="exclusive-articles-section" class="mb-5">
             <h3 class="mb-4">Exclusive Articles in Your Subscribed Categories</h3>
             @if (Model.ExclusiveArticles != null && Model.ExclusiveArticles.Any())
+
             {
                 <div class="row">
                     @foreach (var item in Model.ExclusiveArticles)
+
                     {
                         <div class="col-md-6 mb-4" id="exclusive-@item.Id">
                             <div class="card shadow-sm h-100 border-0">
@@ -343,6 +369,7 @@
                                             <strong class="small">Images:</strong>
                                             <ul class="list-unstyled">
                                                 @foreach (var img in item.Images)
+
                                                 {
                                                     <li class="mb-2">
                                                         <img src="@img.ImgSourceURL" class="img-fluid rounded img-article" alt="@img.Title" style="max-height: 150px; object-fit: cover;" />
@@ -354,13 +381,17 @@
                                         </div>
                                     }
 
-                                    <p class="small"><strong>Likes:</strong> @(ViewBag.LikeCounts.ContainsKey(item.Id) ? ViewBag.LikeCounts[item.Id] : 0)</p>
+
                                     <!-- Like Article Button -->
-                                 
-                                        <form method="post" asp-action="LikeArticle" asp-controller="User" asp-fragment="exclusive-articles-section" class="like-form" onsubmit="return checkLogin(event)">
+                                    <form method="post" class="like-form" data-article-id="@item.Id" onsubmit="likeArticle(event, @item.Id)">
                                         <input type="hidden" name="articleId" value="@item.Id" />
-                                        <input type="hidden" name="source" value="GetAllArticles" />
-                                        <button type="submit" class="btn btn-sm btn-outline-primary"> @(ViewBag.IsLiked.ContainsKey(item.Id) ? "Unlike" : "Like")</button>
+                                        <input type="hidden" name="source" value="HomePage" />
+                                        <button type="submit" class="btn btn-sm btn-outline-primary like-btn">
+                                            @(ViewBag.IsLiked.ContainsKey(item.Id) ? "Unlike" : "Like")
+                                        </button>
+                                        <span class="like-count">
+                                            @(ViewBag.LikeCounts.ContainsKey(item.Id) ? ViewBag.LikeCounts[item.Id] : 0)
+                                        </span>
                                     </form>
                                     <p class="small"><strong>Comments:</strong> @(ViewBag.CommentCounts.ContainsKey(item.Id) ? ViewBag.CommentCounts[item.Id] : 0)</p>
                                     <p class="small"><strong>Views:</strong> @(ViewBag.ViewCounts.ContainsKey(item.Id) ? ViewBag.ViewCounts[item.Id] : 0)</p>
@@ -371,77 +402,112 @@
                     }
                 </div> <!-- Close row -->
             }
+
             else
+
             {
                 <p class="text-muted">No articles available.</p>
             }
         </div> <!-- Close exclusive-articles-section -->
     }
+
     else
+
     {
         <p class="text-danger text-center">Admins do not have access to subscriptions or exclusive articles.</p>
     }
 
-<!-- JavaScript for Smooth Scrolling After Page Reload -->
-<script>
+    <!-- JavaScript for Smooth Scrolling After Page Reload -->
+    <script>
 
-    function saveScrollPosition() {
-        localStorage.setItem("scrollPosition", window.scrollY);
-    }
-    document.addEventListener("DOMContentLoaded", function () {
-        // Check for saved scroll position
-        let scrollY = localStorage.getItem("scrollPosition");
-        if (scrollY) {
-            localStorage.removeItem("scrollPosition"); // Clear stored position after using it
-            window.scrollTo({ top: scrollY, behavior: "smooth" });
+        function saveScrollPosition() {
+            localStorage.setItem("scrollPosition", window.scrollY);
         }
-
-        // Existing fragment scroll behavior
-        if (window.location.hash) {
-            var element = document.querySelector(window.location.hash);
-            if (element) {
-                setTimeout(() => {
-                    element.scrollIntoView({ behavior: "smooth", block: "start" });
-                }, 500); // Slight delay to ensure page has fully loaded
+        document.addEventListener("DOMContentLoaded", function () {
+            // Check for saved scroll position
+            let scrollY = localStorage.getItem("scrollPosition");
+            if (scrollY) {
+                localStorage.removeItem("scrollPosition"); // Clear stored position after using it
+                window.scrollTo({ top: scrollY, behavior: "smooth" });
             }
+
+            // Existing fragment scroll behavior
+            if (window.location.hash) {
+                var element = document.querySelector(window.location.hash);
+                if (element) {
+                    setTimeout(() => {
+                        element.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }, 500); // Slight delay to ensure page has fully loaded
+                }
+            }
+        });
+        document.querySelectorAll(".like-form").forEach(form => {
+            form.addEventListener("submit", function (event) {
+                event.preventDefault(); // Prevent full page reload
+
+                var formData = new FormData(this);
+                var articleId = this.getAttribute("data-article-id");
+
+                fetch("/User/LikeArticle", {
+                    method: "POST",
+                    body: formData,
+                    headers: { "X-Requested-With": "XMLHttpRequest" }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update like button text
+                            let button = this.querySelector(".like-btn");
+                            button.textContent = data.isLiked ? "Unlike" : "Like";
+
+                            // Update like count
+                            let likeCountElement = this.closest(".card-body").querySelector(".like-count");
+                            if (likeCountElement) {
+                                likeCountElement.textContent = `Likes: ${data.likeCount}`;
+                            }
+                        } else {
+                            alert(data.message);
+                        }
+                    })
+                    .catch(error => console.error("Error:", error));
+            });
+
+        });
+        function handleFormSubmit(event) {
+            // Call checkLogin first
+            if (!checkLogin(event)) {
+                return false; // Stop form submission if checkLogin fails
+            }
+
+            // Call saveScrollPosition
+            saveScrollPosition();
+
+            // Allow form submission to proceed
+            return true;
         }
-    });
-
-    function handleFormSubmit(event) {
-        // Call checkLogin first
-        if (!checkLogin(event)) {
-            return false; // Stop form submission if checkLogin fails
+        function checkLogin(event) {
+            if (!userIsLoggedIn) { // Replace with your login check logic
+                alert("Please log in to like this article.");
+                return false; // Stop form submission
+            }
+            return true; // Allow form submission
         }
 
-        // Call saveScrollPosition
-        saveScrollPosition();
-
-        // Allow form submission to proceed
-        return true;
-    }
-    function checkLogin(event) {
-        if (!userIsLoggedIn) { // Replace with your login check logic
-            alert("Please log in to like this article.");
-            return false; // Stop form submission
+        function toggleReplyUpdateForm(replyId) {
+            var form = document.getElementById("reply-update-form-" + replyId);
+            form.style.display = form.style.display === "none" ? "block" : "none";
         }
-        return true; // Allow form submission
-    }
-
-    function toggleReplyUpdateForm(replyId) {
-        var form = document.getElementById("reply-update-form-" + replyId);
-        form.style.display = form.style.display === "none" ? "block" : "none";
-    }
-</script>
+    </script>
 
 
 
 
 
-<!-- Style for Consistent Image Sizing -->
-<style>
-    .img-article {
-        width: 100%;
-        height: 200px;
-        object-fit: cover;
-    }
-</style>
+    <!-- Style for Consistent Image Sizing -->
+    <style>
+        .img-article {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+    </style>
