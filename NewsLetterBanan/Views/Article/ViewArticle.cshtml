@@ -145,7 +145,7 @@
             <!-- Views -->
             <p class="card-text small"><strong>Views:</strong> @ViewBag.ViewCount</p>
             <!-- Like Article Button -->
-            <form method="post" asp-action="LikeArticle" asp-controller="User" class="like-form d-inline" onsubmit="checkLogin(event)" >
+            <form method="post" asp-action="LikeArticle" asp-controller="User" class="d-inline" onsubmit="checkLogin(event)" >
                 <input type="hidden" name="articleId" value="@Model?.Id" />
                 <button type="submit" class="btn btn-sm @(ViewBag.IsLiked != null && ViewBag.IsLiked.ContainsKey(Model?.Id ?? 0) ? "btn-danger" : "btn-outline-primary")">
                     <i class="fas fa-thumbs-up"></i>
@@ -190,7 +190,7 @@
                                 <!-- Comment Likes -->
                                 <p class="card-text small"><strong>Likes:</strong> @(ViewBag.CommentLikeCounts.ContainsKey(comment.Id) ? ViewBag.CommentLikeCounts[comment.Id] : 0)</p>
                                 <!-- Like Comment Button -->
-                                <form method="post" asp-action="LikeComment" asp-controller="User" class="like-form d-inline">
+                                <form method="post" asp-action="LikeComment" asp-controller="User" class="d-inline">
                                     <input type="hidden" name="commentId" value="@comment.Id" />
                                     <input type="hidden" name="source" value="GetAllArticles" />
                                     <button type="submit" class="btn btn-sm @(ViewBag.IsCommentLiked.ContainsKey(comment.Id) ? "btn-danger" : "btn-outline-primary")">
@@ -233,7 +233,7 @@
                                                 <!-- Reply Likes -->
                                                 <p class="card-text small"><strong>Likes:</strong> @(ViewBag.ReplyLikeCounts.ContainsKey(reply.Id) ? ViewBag.ReplyLikeCounts[reply.Id] : 0)</p>
                                                 <!-- Like Reply Button -->
-                                                <form method="post" asp-action="LikeReply" asp-controller="User" class="like-form d-inline" >
+                                                <form method="post" asp-action="LikeReply" asp-controller="User" class="d-inline">
                                                     <input type="hidden" name="replyId" value="@reply.Id" />
                                                     <input type="hidden" name="source" value="GetAllArticles" />
                                                     <button type="submit" class="btn btn-sm @(ViewBag.IsReplyLiked.ContainsKey(reply.Id) ? "btn-danger" : "btn-outline-danger")">

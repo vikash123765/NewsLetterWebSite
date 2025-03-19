@@ -354,20 +354,13 @@
                                         </div>
                                     }
 
-
-
-                                    <form method="post" class="like-form" data-article-id="@item.Id" onsubmit="likeArticle(event, @item.Id)">
+                                    <p class="small"><strong>Likes:</strong> @(ViewBag.LikeCounts.ContainsKey(item.Id) ? ViewBag.LikeCounts[item.Id] : 0)</p>
+                                    <!-- Like Article Button -->
+                                 
+                                        <form method="post" asp-action="LikeArticle" asp-controller="User" asp-fragment="exclusive-articles-section" class="like-form" onsubmit="return checkLogin(event)">
                                         <input type="hidden" name="articleId" value="@item.Id" />
-                                        <input type="hidden" name="source" value="HomePage" />
-                                        <button type="submit" class="btn btn-sm btn-outline-primary like-btn">
-                                            @(ViewBag.IsLiked.ContainsKey(item.Id) ? "Unlike" : "Like")
-
-                                        </button>
-                                        <span class="like-count">
-                                            @(ViewBag.LikeCounts.ContainsKey(item.Id) ? ViewBag.LikeCounts[item.Id] : 0)
-                                        </span>
-
-
+                                        <input type="hidden" name="source" value="GetAllArticles" />
+                                        <button type="submit" class="btn btn-sm btn-outline-primary"> @(ViewBag.IsLiked.ContainsKey(item.Id) ? "Unlike" : "Like")</button>
                                     </form>
                                     <p class="small"><strong>Comments:</strong> @(ViewBag.CommentCounts.ContainsKey(item.Id) ? ViewBag.CommentCounts[item.Id] : 0)</p>
                                     <p class="small"><strong>Views:</strong> @(ViewBag.ViewCounts.ContainsKey(item.Id) ? ViewBag.ViewCounts[item.Id] : 0)</p>
@@ -413,39 +406,6 @@
             }
         }
     });
-        document.querySelectorAll(".like-form").forEach(form => {
-            form.addEventListener("submit", function (event) {
-                event.preventDefault(); // Prevent full page reload
-
-                var formData = new FormData(this);
-                var articleId = this.getAttribute("data-article-id");
-
-                fetch("/User/LikeArticle", {
-                    method: "POST",
-                    body: formData,
-                    headers: { "X-Requested-With": "XMLHttpRequest" }
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Update like button text
-                            let button = this.querySelector(".like-btn");
-                            button.textContent = data.isLiked ? "Unlike" : "Like";
-
-                            // Update like count
-                            let likeCountElement = this.closest(".card-body").querySelector(".like-count");
-                            if (likeCountElement) {
-                                likeCountElement.textContent = `Likes: ${data.likeCount}`;
-                            }
-                        } else {
-                            alert(data.message);
-                        }
-                    })
-                    .catch(error => console.error("Error:", error));
-            });
-
-        });
-
 
     function handleFormSubmit(event) {
         // Call checkLogin first
