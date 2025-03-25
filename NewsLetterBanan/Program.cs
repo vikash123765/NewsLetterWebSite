@@ -8,6 +8,8 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using NewsLetterBanan.Models.Helper;
+using Azure.AI.OpenAI;
+using Azure;
 
 
 
@@ -61,7 +63,14 @@ namespace NewsLetterBanan
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "User Role API", Version = "v1" });
             });
-
+            // Add services to the container.
+            builder.Services.AddControllersWithViews();
+            var configuration = builder.Configuration;
+            var endpoint = new Uri(configuration["AzureOpenAI:Endpoint"]!);
+            var apiKey = configuration["AzureOpenAI:ApiKey"]!;
+            builder.Services.AddSingleton(new AzureOpenAIClient(endpoint, new AzureKeyCredential(apiKey)));
+            builder.Services.AddScoped<IChatService, ChatService>();
+     
             var app = builder.Build();
 
             // Swagger and development configurations (optional)
