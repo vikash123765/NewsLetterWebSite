@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NewsLetterBanan.Data;
+using NewsLetterBanan.Helpers;
 using NewsLetterBanan.Models.ViewModels;
 using NewsLetterBanan.Services.Interfaces;
 
@@ -28,6 +30,34 @@ namespace NewsLetterBanan.Controllers
             var response = _chatService.GetChatResponseAsync(chatVM.UserMessage).Result;
             chatVM.Response = response;
             return View(chatVM);
+        }
+        public IActionResult ChatWithHistory()
+        {
+            ChatVM chat = new ChatVM();
+            chat.ChatHistory = HttpContext.Session.Get<List<(string, string)>>("Chat");
+            if (chat.ChatHistory is null)
+            {
+                chat.ChatHistory = new List<(string, string)>();
+                HttpContext.Session.Set("Chat", chat.ChatHistory);
+            }
+            chat.UserMessage = string.Empty;
+            return View(chat);
+        }
+
+        [HttpPost]
+        public IActionResult ChatWithHistory(ChatVM chat)
+        {
+            chat.ChatHistory = HttpContext.Session.Get<List<(string, string)>>("Chat");
+            if (chat.ChatHistory is null)
+            {
+                chat.ChatHistory = new List<(string, string)>();
+            }
+            chat.ChatHistory.Add(("User", chat.UserMessage));
+            var response = _chatService.ChatResponseConversation(chat.ChatHistory);
+            chat.ChatHistory.Add(("AI assistant", response.Result));
+            HttpContext.Session.Set("Chat", chat.ChatHistory);
+            chat.UserMessage = "";
+            return View(chat);
         }
         public IActionResult Privacy()
         {
