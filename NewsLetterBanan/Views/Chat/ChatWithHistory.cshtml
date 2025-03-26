@@ -14,7 +14,7 @@
             @foreach (var item in Model.ChatHistory)
             {
                 <div class="@(item.Role == "User" ? "user-message m-2" : "ai-message m-2")">
-					<strong>@item.Role:</strong> <pre>@item.Content</pre>
+					<strong>@item.Role:</strong> @item.Content
                 </div>
             }
         }
