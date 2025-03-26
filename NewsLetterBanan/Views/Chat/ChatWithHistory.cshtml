@@ -1,0 +1,51 @@
+﻿@model NewsLetterBanan.Models.ViewModels.ChatVM
+
+@{
+    ViewData["Title"] = "ChatWithHistory";
+}
+
+<h1>Chat With History</h1>
+
+<hr />
+<div class="chat-box m-2" style="border: 1px solid #ccc; padding: 10px; max-height: 400px; overflow-y: scroll;">
+    @foreach (var item in Model.ChatHistory)
+    {
+        <div class="@(item.Role == "User" ? "user-message m-2" : "ai-message m-2")">
+            <strong>@item.Role:</strong> @item.Content
+        </div>
+    }
+</div>
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="ChatWithHistory">
+
+            <h4 m-3>What do you want to know?</h4>
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group m-3">
+                <label asp-for="UserMessage" class="control-label"></label>
+                <input asp-for="UserMessage" class="form-control" />
+                <span asp-validation-for="UserMessage" class="text-danger"></span>
+            </div>
+            <div class="form-group m-3">
+                <input type="submit" value="Send" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .user-message {
+        text-align: right;
+        color: blue;
+    }
+
+    .ai-message {
+        text-align: left;
+        color: green;
+    }
+</style>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

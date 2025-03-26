@@ -70,7 +70,7 @@ namespace NewsLetterBanan
             var apiKey = configuration["AzureOpenAI:ApiKey"]!;
             builder.Services.AddSingleton(new AzureOpenAIClient(endpoint, new AzureKeyCredential(apiKey)));
             builder.Services.AddScoped<IChatService, ChatService>();
-     
+            builder.Services.AddSession();
             var app = builder.Build();
 
             // Swagger and development configurations (optional)
@@ -108,11 +108,11 @@ namespace NewsLetterBanan
 
            // app.UseHttpsRedirection();
             app.UseStaticFiles();
-            app.UseSession();
+         
             app.UseRouting();
 
             app.UseAuthorization();
-
+            app.UseSession();
             app.MapControllerRoute(
         name: "default",
         pattern: "{controller=Home}/{action=Index}/{id?}"); // Default route pattern
