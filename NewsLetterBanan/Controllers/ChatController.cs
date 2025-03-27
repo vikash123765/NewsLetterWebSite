@@ -1,10 +1,12 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NewsLetterBanan.Data;
 using NewsLetterBanan.Helpers;
 using NewsLetterBanan.Models.ViewModels;
 using NewsLetterBanan.Services.Interfaces;
+using Newtonsoft.Json;
 
 namespace NewsLetterBanan.Controllers
 {
@@ -59,6 +61,56 @@ namespace NewsLetterBanan.Controllers
             chat.UserMessage = "";
             return View(chat);
         }
+
+        public IActionResult ChatWithHistoryVM()
+        {
+            ChatVM chat = new ChatVM();
+           
+            return View(chat);
+        }
+
+        [HttpPost]
+        public IActionResult ChatWithHistoryVM(ChatVM chat)
+        {
+            var temp= chat.SerializedHistory ?? string.Empty;
+            chat.ChatHistory = JsonConvert.DeserializeObject<List<(string, string)>>(temp);
+            if (chat.ChatHistory is null)
+            {
+                chat.ChatHistory = new List<(string, string)>();
+            }
+            chat.ChatHistory.Add(("User", chat.UserMessage));
+            var response = _chatService.ChatResponseConversation(chat.ChatHistory);
+            chat.ChatHistory.Add(("AI assistant", response.Result));
+            chat.SerializedHistory = JsonConvert.SerializeObject(chat.ChatHistory);
+            chat.UserMessage = "";
+            return View(chat);
+        }
+
+        public IActionResult ChatWithHistoryTempData()
+        {
+            ChatVM chat = new ChatVM();
+
+            return View(chat);
+        }
+
+        [HttpPost]
+        public IActionResult ChatWithHistoryTempData(ChatVM chat)
+        {
+            var temp = (string)TempData["history"] ?? string.Empty;
+            chat.ChatHistory = JsonConvert.DeserializeObject<List<(string, string)>>(temp);
+            if (chat.ChatHistory is null)
+            {
+                chat.ChatHistory = new List<(string, string)>();
+            }
+            chat.ChatHistory.Add(("User", chat.UserMessage));
+            var response = _chatService.ChatResponseConversation(chat.ChatHistory);
+            chat.ChatHistory.Add(("AI assistant", response.Result));
+            TempData["history"] = JsonConvert.SerializeObject(chat.ChatHistory);
+            chat.UserMessage = "";
+            return View(chat);
+        }
+
+
         public IActionResult Privacy()
         {
             return View();

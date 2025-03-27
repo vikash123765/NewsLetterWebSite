@@ -1,0 +1,60 @@
+﻿@model NewsLetterBanan.Models.ViewModels.ChatVM
+<div class="container mt-4">
+    <h1>Chat With History</h1>
+
+    <hr />
+    <div class="chat-box m-2 p-3 border rounded bg-light" style="max-height: 500px; overflow-y: auto; min-height: 300px;">
+        @if (Model.ChatHistory != null && Model.ChatHistory.Any())
+        {
+            @foreach (var item in Model.ChatHistory)
+            {
+                <div class="@(item.Role == "User" ? "user-message m-2" : "ai-message m-2")">
+                    <strong>@item.Role:</strong> @item.Content
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center text-secondary">No conversation yet.</div>
+        }
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="text-center mt-3 d-none">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-6">
+           
+                <h4 class="mb-3">What do you want to know?</h4>
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group m-3">
+                    <label asp-for="UserMessage" class="control-label"></label>
+                    <input asp-for="UserMessage" class="form-control" />
+                    <span asp-validation-for="UserMessage" class="text-danger"></span>
+                </div>
+                <div class="form-group m-3 text-center">
+                    <input type="submit" value="Send" class="btn btn-primary" />
+                </div>
+           
+        </div>
+    </div>
+</div>
+
+<style>
+    .user-message {
+        text-align: right;
+        color: blue;
+    }
+
+    .ai-message {
+        text-align: left;
+        color: green;
+    }
+</style>
+
+
+

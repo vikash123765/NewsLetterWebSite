@@ -4,9 +4,9 @@
     ViewData["Title"] = "ChatWithHistory";
 }
 
- <form asp-action="ChatWithHistory" id="chatForm">
-    
-<partial name="_ChatPartial" model="@Model" />
+<form asp-action="ChatWithHistoryTempData" id="chatForm">
+ 
+    <partial name="_ChatPartial" model="@Model" />
 </form>
 @section Scripts {
     <script>
@@ -18,4 +18,3 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 }
-
