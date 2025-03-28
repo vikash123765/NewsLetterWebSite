@@ -30,9 +30,17 @@
                                     <h4 class="card-title mb-0">@item.Headline</h4>
                                 </div>
                                 <div class="card-body">
+                                    <!-- In your article card body -->
                                     <p class="card-text">
                                         @(item.Content.Length > 200 ? item.Content.Substring(0, 200) + "..." : item.Content)
+                                        <button onclick="speakArticle(@item.Id, 'home', this)">
+                                            🔊
+                                        </button>
+                                        <span class="spinner spinner-border spinner-border-sm" style="display: none;" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </span>
                                     </p>
+                                 
                                     <a href="@Url.Action("ViewArticle", "Article", new { id = item.Id })" class="btn btn-success btn-sm">Read More</a>
                                     <p class="mt-2 small"><strong>By:</strong> @(item.User != null ? $"{item.User.FirstName} {item.User.LastName}" : "Unknown Author")</p>
                                     <p class="small"><strong>Category:</strong> @(item.Categories?.Count > 0 ? string.Join(", ", item.Categories.Select(c => c.Name)) : "No Category")</p>
@@ -336,6 +344,27 @@
                 });
             });
         });
+
+        // In your script section
+        function speakArticle(articleId, source, button) {
+            var spinner = button.nextElementSibling;
+            button.disabled = true;
+            spinner.style.display = "inline-block"; // Changed to inline-block
+
+            var audio = new Audio(`/Article/SpeakArticle?id=${articleId}&source=${source}`);
+
+            audio.oncanplaythrough = function () {
+                spinner.style.display = "none";
+                button.disabled = false;
+                audio.play();
+            };
+
+            audio.onerror = function () {
+                spinner.style.display = "none";
+                button.disabled = false;
+                alert("Error loading audio.");
+            };
+        }
     </script>
 }
 
