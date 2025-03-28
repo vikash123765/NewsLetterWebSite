@@ -14,7 +14,18 @@
             <!-- Author -->
             <p class="card-subtitle mb-2 text-muted small">By: @(Model.User != null ? $"{Model.User.FirstName} {Model.User.LastName}" : "Unknown Author")</p>
             <!-- Article Content -->
-            <p class="card-text small">@Model.Content</p>
+    
+            <p class="card-text">
+                @(Model.Content)
+                <button onclick="speakArticle(@Model.Id, 'viewArticle', this)">
+                    🔊
+                </button>
+                <button class="cancel-btn btn btn-danger btn-sm" style="display: none;" onclick="cancelSpeech(this)">X</button>
+                <span class="spinner spinner-border spinner-border-sm" style="display: none;" role="status">
+
+                    <span class="visually-hidden">Loading...</span>
+                </span>
+            </p>
             <!-- Content Summary -->
             <p class="card-text small"><strong>Content Summary:</strong> @Model.ContentSummary</p>
             <!-- Category -->
@@ -158,7 +169,7 @@
 
             <!-- Show Comments Button -->
             <button class="btn btn-sm btn-info toggle-comments" data-article-id="@Model.Id" @(ViewBag.CommentsOnOff == true ? "disabled" : "")>
-                <i class="fas fa-comments"></i> Show Comments
+                <i class="fas fa-comments"></i> Comments
             </button>
 
             @if (ViewBag.CommentsOnOff == true)
@@ -422,5 +433,46 @@
 
     });
 
+    let currentAudio = null;
 
+    function speakArticle(articleId, source, button) {
+        var spinner = button.nextElementSibling.nextElementSibling;
+        var cancelButton = button.nextElementSibling;
+
+        button.disabled = true;
+        spinner.style.display = "inline-block";
+        cancelButton.style.display = "inline-block";
+
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio = null;
+        }
+
+        currentAudio = new Audio(`/Article/SpeakArticle?id=${articleId}&source=${source}`);
+
+        currentAudio.oncanplaythrough = function () {
+            spinner.style.display = "none";
+            button.disabled = false;
+            currentAudio.play();
+        };
+
+        currentAudio.onended = function () {
+            cancelButton.style.display = "none";
+        };
+
+        currentAudio.onerror = function () {
+            spinner.style.display = "none";
+            button.disabled = false;
+            cancelButton.style.display = "none";
+            alert("Error loading audio.");
+        };
+    }
+
+    function cancelSpeech(button) {
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio = null;
+        }
+        button.style.display = "none";
+    }
 </script> 

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NewsLetterBanan.Data;
 using NewsLetterBanan.Services.Interfaces;
+using Microsoft.CognitiveServices.Speech;
 using Newtonsoft.Json;
 
 namespace NewsLetterBanan.Controllers
@@ -19,6 +20,9 @@ namespace NewsLetterBanan.Controllers
         private readonly IArticleService _articleService;
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private static string speechKey = "8iKRLUYJQEzLjKqmTLQ43o911X85h9VUOeVsuy5fmllzJhV2SUMLJQQJ99BCACYeBjFXJ3w3AAAYACOGoTw3";
+        private static string speechRegion = "eastus";
+
 
         public ArticleController(ApplicationDbContext context, IArticleService articleService, UserManager<User> userManager, RoleManager<IdentityRole> roleManager,ILogger<ArticleController> logger)
         {
@@ -382,7 +386,54 @@ namespace NewsLetterBanan.Controllers
         }
 
 
-        
+        public async Task<IActionResult> SpeakArticle(int id, string source)
+        {
+            var article = _articleService.GetArticleById(id); // Fetch the article from the database
+            if (article == null || string.IsNullOrWhiteSpace(article.Content))
+            {
+                return NotFound("Article not found or has no content.");
+            }
+
+            string contentToRead = article.Content;
+            if (source == "home" ||  source == "myPage")
+            {
+                contentToRead = article.Content.Length > 200 ? article.Content.Substring(0, 200) + "..." : article.Content;
+            }
+            else if (source == "getAllArticles")
+            {
+                contentToRead = article.Content.Length > 300 ? article.Content.Substring(0, 300) + "..." : article.Content;
+             
+            }
+            else if (source == "viewArticle")
+            {
+                contentToRead = article.Content; // Full content
+            }
+            else
+            {
+                contentToRead = article.Content;
+            }
+           
+
+            var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
+            speechConfig.SpeechSynthesisVoiceName = "en-US-AvaMultilingualNeural";
+
+            using (var synthesizer = new SpeechSynthesizer(speechConfig, null))
+            {
+                using (var result = await synthesizer.SpeakTextAsync(contentToRead))
+                {
+                    if (result.Reason == ResultReason.SynthesizingAudioCompleted)
+                    {
+                        var audioStream = new MemoryStream(result.AudioData);
+                        return File(audioStream, "audio/wav");
+                    }
+                    else
+                    {
+                        return BadRequest("Failed to synthesize speech.");
+                    }
+                }
+            }
+        }
+
 
     }
 }
