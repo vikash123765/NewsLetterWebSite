@@ -395,10 +395,24 @@ namespace NewsLetterBanan.Controllers
             }
 
             string contentToRead = article.Content;
-            if (source == "home" || source == "getAllArticles" || source == "myPage")
+            if (source == "home" ||  source == "myPage")
             {
                 contentToRead = article.Content.Length > 200 ? article.Content.Substring(0, 200) + "..." : article.Content;
             }
+            else if (source == "getAllArticles")
+            {
+                contentToRead = article.Content.Length > 300 ? article.Content.Substring(0, 300) + "..." : article.Content;
+             
+            }
+            else if (source == "viewArticle")
+            {
+                contentToRead = article.Content; // Full content
+            }
+            else
+            {
+                contentToRead = article.Content;
+            }
+           
 
             var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
             speechConfig.SpeechSynthesisVoiceName = "en-US-AvaMultilingualNeural";
