@@ -36,7 +36,9 @@
                                         <button onclick="speakArticle(@item.Id, 'home', this)">
                                             🔊
                                         </button>
+                                        <button class="cancel-btn btn btn-danger btn-sm" style="display: none;" onclick="cancelSpeech(this)">X</button>
                                         <span class="spinner spinner-border spinner-border-sm" style="display: none;" role="status">
+
                                             <span class="visually-hidden">Loading...</span>
                                         </span>
                                     </p>
@@ -345,26 +347,49 @@
             });
         });
 
-        // In your script section
+        let currentAudio = null;
+
         function speakArticle(articleId, source, button) {
-            var spinner = button.nextElementSibling;
+            var spinner = button.nextElementSibling.nextElementSibling;
+            var cancelButton = button.nextElementSibling;
+
             button.disabled = true;
-            spinner.style.display = "inline-block"; // Changed to inline-block
+            spinner.style.display = "inline-block";
+            cancelButton.style.display = "inline-block";
 
-            var audio = new Audio(`/Article/SpeakArticle?id=${articleId}&source=${source}`);
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
 
-            audio.oncanplaythrough = function () {
+            currentAudio = new Audio(`/Article/SpeakArticle?id=${articleId}&source=${source}`);
+
+            currentAudio.oncanplaythrough = function () {
                 spinner.style.display = "none";
                 button.disabled = false;
-                audio.play();
+                currentAudio.play();
             };
 
-            audio.onerror = function () {
+            currentAudio.onended = function () {
+                cancelButton.style.display = "none";
+            };
+
+            currentAudio.onerror = function () {
                 spinner.style.display = "none";
                 button.disabled = false;
+                cancelButton.style.display = "none";
                 alert("Error loading audio.");
             };
         }
+
+        function cancelSpeech(button) {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            button.style.display = "none";
+        }
+
     </script>
 }
 
@@ -376,3 +401,7 @@
         object-fit: cover;
     }
 </style>
+
+
+
+
