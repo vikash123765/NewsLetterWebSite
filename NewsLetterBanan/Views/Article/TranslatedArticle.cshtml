@@ -1,0 +1,21 @@
+﻿@model Tuple<string, string, string>
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Translated Text</h2>
+
+    <div class="alert alert-info">
+        <strong>Article:</strong> <em>@Model.Item2</em><br>
+        <strong>Translated to:</strong> <em>@Model.Item3</em>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Translated Content</h5>
+            <p class="card-text">@Model.Item1</p> <!-- Displaying translated text -->
+        </div>
+    </div>
+
+    <div class="mt-4 text-center">
+        <a href="@Context.Request.Headers["Referer"]" class="btn btn-primary">Back to Articles/Article</a>
+    </div>
+</div>
