@@ -425,9 +425,10 @@
         // 🔥 PREVENT SCROLLING MANIPULATION & RELOAD INSTANTLY AFTER FORM SUBMISSION
         document.querySelectorAll("form").forEach(form => {
             form.addEventListener("submit", function (event) {
-                if (!this.action.includes("TranslateArticle")) {
-                    event.preventDefault();
+                if (this.action.includes("TranslateArticle")) {
+                    return; // Let server handle redirection
                 }
+                event.preventDefault();
 
 
                 // Save open comment and reply states before reload
