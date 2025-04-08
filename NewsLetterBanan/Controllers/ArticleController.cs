@@ -8,6 +8,9 @@ using NewsLetterBanan.Data;
 using NewsLetterBanan.Services.Interfaces;
 using Microsoft.CognitiveServices.Speech;
 using Newtonsoft.Json;
+using System.Text;
+using NewsLetterBanan.Models;
+using Newtonsoft.Json.Linq;
 
 namespace NewsLetterBanan.Controllers
 {
@@ -20,11 +23,15 @@ namespace NewsLetterBanan.Controllers
         private readonly IArticleService _articleService;
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private static readonly string key = "RMYzPGNIROnY8yH39wv6jd3YBquqJ8FUcG4PtWoXHggke5O0yC1FJQQJ99BCACfhMk5XJ3w3AAAbACOGUVrS";
+        private static readonly string endpoint = "https://api.cognitive.microsofttranslator.com";
+        private static readonly string location = "swedencentral";
+
         private static string speechKey = "8iKRLUYJQEzLjKqmTLQ43o911X85h9VUOeVsuy5fmllzJhV2SUMLJQQJ99BCACYeBjFXJ3w3AAAYACOGoTw3";
         private static string speechRegion = "eastus";
 
 
-        public ArticleController(ApplicationDbContext context, IArticleService articleService, UserManager<User> userManager, RoleManager<IdentityRole> roleManager,ILogger<ArticleController> logger)
+        public ArticleController(ApplicationDbContext context, IArticleService articleService, UserManager<User> userManager, RoleManager<IdentityRole> roleManager, ILogger<ArticleController> logger)
         {
             _context = context;
             _articleService = articleService;
@@ -32,7 +39,7 @@ namespace NewsLetterBanan.Controllers
             _roleManager = roleManager;
             _logger = logger;
         }
-       
+
         [HttpGet("GetAllUsersAsync")]
 
         public async Task<IActionResult> GetAllUsersAsync()
@@ -71,7 +78,7 @@ namespace NewsLetterBanan.Controllers
         }
 
 
-     
+
         public async Task<IActionResult> GetAllArticles(int? categoryId, string? searchKeyword, string? sortBy, int? page = 1)
         {
             int pageSize = 5;
@@ -252,11 +259,11 @@ namespace NewsLetterBanan.Controllers
                 return NotFound();
             }
 
-			return RedirectToAction("ViewArticle", new { id = article.Id });
+            return RedirectToAction("ViewArticle", new { id = article.Id });
 
-		}
+        }
 
-		[HttpGet("ViewArticle")]
+        [HttpGet("ViewArticle")]
         public async Task<IActionResult> ViewArticle(int id)
         {
             // Retrieve the article by its ID with all the necessary related data
@@ -333,11 +340,11 @@ namespace NewsLetterBanan.Controllers
                 .Where(rl => rl.CommentReply.Comment.ArticleId == id)
                 .GroupBy(rl => rl.CommentReplyId)
                 .ToDictionaryAsync(g => g.Key, g => g.Count());
-            
-                        // Fetch the current logged-in user's ID
+
+            // Fetch the current logged-in user's ID
             var userId = _userManager.GetUserId(User);
-            
-         
+
+
 
             // Check if user has liked each comment
             var userCommentLikes = await _context.CommentLikes
@@ -375,6 +382,7 @@ namespace NewsLetterBanan.Controllers
             ViewBag.IsLoggedIn = User.Identity.IsAuthenticated;
 
             // Pass the article and the statistics data to the view
+            ViewData["ArticleId"] = article.Id; // Pass the Id to ViewData
             ViewBag.CommentCounts = commentCounts;
             ViewBag.LikeCounts = likeCounts;
             ViewBag.ReplyCounts = replyCounts;
@@ -395,14 +403,14 @@ namespace NewsLetterBanan.Controllers
             }
 
             string contentToRead = article.Content;
-            if (source == "home" ||  source == "myPage")
+            if (source == "home" || source == "myPage")
             {
                 contentToRead = article.Content.Length > 200 ? article.Content.Substring(0, 200) + "..." : article.Content;
             }
             else if (source == "getAllArticles")
             {
                 contentToRead = article.Content.Length > 300 ? article.Content.Substring(0, 300) + "..." : article.Content;
-             
+
             }
             else if (source == "viewArticle")
             {
@@ -412,7 +420,7 @@ namespace NewsLetterBanan.Controllers
             {
                 contentToRead = article.Content;
             }
-           
+
 
             var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
             speechConfig.SpeechSynthesisVoiceName = "en-US-AvaMultilingualNeural";
@@ -434,6 +442,68 @@ namespace NewsLetterBanan.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> TranslateArticle(int id, string language)
+        {
+            var article = _context.Articles.FirstOrDefault(a => a.Id == id);
+            if (article == null) return NotFound();
 
+            string route = $"/translate?api-version=3.0&to={language}";
+            object[] body = new object[] { new { Text = article.Content } };
+            var requestBody = JsonConvert.SerializeObject(body);
+
+            using (var client = new HttpClient())
+            using (var request = new HttpRequestMessage(HttpMethod.Post, new Uri(endpoint + route)))
+            {
+                request.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+                request.Headers.Add("Ocp-Apim-Subscription-Key", key);
+                request.Headers.Add("Ocp-Apim-Subscription-Region", location);
+
+                HttpResponseMessage response = await client.SendAsync(request);
+                string result = await response.Content.ReadAsStringAsync();
+
+                dynamic translationResult = JsonConvert.DeserializeObject(result);
+                string translatedText = translationResult[0]?.translations[0]?.text;
+
+                if (string.IsNullOrEmpty(translatedText))
+                {
+                    return RedirectToAction("Index"); // Fallback if translation failed
+                }
+
+                // Store the translated text in Session
+                HttpContext.Session.SetString("TranslatedText", translatedText);
+                HttpContext.Session.SetString("ArticleName", article.Headline ?? "Unknown Article");
+                HttpContext.Session.SetString("TargetLanguage", language ?? "Unknown Language");
+
+                // Verify that session variables are actually stored
+                if (HttpContext.Session.GetString("TranslatedText") == null)
+                {
+                    return Content("Session storage failed! Please try again.");
+                }
+
+                // Redirect to the TranslatedArticle view
+                return RedirectToAction("TranslatedArticle");
+            }
+        }
+        public IActionResult TranslatedArticle()
+        {
+            string translatedText = HttpContext.Session.GetString("TranslatedText");
+            if (string.IsNullOrEmpty(translatedText))
+            {
+                return RedirectToAction("Index"); // Redirect if no data in session
+            }
+
+            string articleName = HttpContext.Session.GetString("ArticleName") ?? "Unknown Article";
+            string targetLanguage = HttpContext.Session.GetString("TargetLanguage") ?? "Unknown Language";
+
+            // 🛑 Clear session variables to avoid reloading issues
+            HttpContext.Session.Remove("TranslatedText");
+            HttpContext.Session.Remove("ArticleName");
+            HttpContext.Session.Remove("TargetLanguage");
+
+            return View("TranslatedArticle", new Tuple<string, string, string>(translatedText, articleName, targetLanguage));
+        }
+
+    
     }
 }
