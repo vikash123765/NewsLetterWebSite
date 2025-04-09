@@ -66,6 +66,7 @@ namespace NewsLetterBanan
             // Add services to the container.
             builder.Services.AddControllersWithViews();
             var configuration = builder.Configuration;
+
             var endpoint = new Uri(configuration["AzureOpenAI:Endpoint"]!);
             var apiKey = configuration["AzureOpenAI:ApiKey"]!;
             builder.Services.AddSingleton(new AzureOpenAIClient(endpoint, new AzureKeyCredential(apiKey)));

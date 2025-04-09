@@ -11,6 +11,8 @@ using Newtonsoft.Json;
 using System.Text;
 using NewsLetterBanan.Models;
 using Newtonsoft.Json.Linq;
+using Azure;
+using Azure.AI.TextAnalytics;
 
 namespace NewsLetterBanan.Controllers
 {
@@ -22,10 +24,19 @@ namespace NewsLetterBanan.Controllers
         private readonly ILogger<ArticleController> _logger;
         private readonly IArticleService _articleService;
         private readonly UserManager<User> _userManager;
+      
         private readonly RoleManager<IdentityRole> _roleManager;
         private static readonly string key = "RMYzPGNIROnY8yH39wv6jd3YBquqJ8FUcG4PtWoXHggke5O0yC1FJQQJ99BCACfhMk5XJ3w3AAAbACOGUVrS";
         private static readonly string endpoint = "https://api.cognitive.microsofttranslator.com";
         private static readonly string location = "swedencentral";
+        // This example requires environment variables named "LANGUAGE_KEY" and "LANGUAGE_ENDPOINT"
+        static string languageKey = "Dyn05PviUzAQGOfRkhFTHzp9hc1ZPrCzcjZP5YXYf8GXLOlkz0daJQQJ99BCACfhMk5XJ3w3AAAaACOG7rVS";
+        static string languageEndpoint = "https://gr2409languageservice.cognitiveservices.azure.com/";
+
+        private static readonly AzureKeyCredential credentials = new AzureKeyCredential(languageKey);
+        private static readonly Uri endpointL = new Uri(languageEndpoint);
+
+        private static readonly TextAnalyticsClient textAnalyticsClient = new TextAnalyticsClient(endpointL, credentials);
 
         private static string speechKey = "8iKRLUYJQEzLjKqmTLQ43o911X85h9VUOeVsuy5fmllzJhV2SUMLJQQJ99BCACYeBjFXJ3w3AAAYACOGoTw3";
         private static string speechRegion = "eastus";
@@ -38,6 +49,7 @@ namespace NewsLetterBanan.Controllers
             _userManager = userManager;
             _roleManager = roleManager;
             _logger = logger;
+          
         }
 
         [HttpGet("GetAllUsersAsync")]
@@ -504,6 +516,59 @@ namespace NewsLetterBanan.Controllers
             return View("TranslatedArticle", new Tuple<string, string, string>(translatedText, articleName, targetLanguage));
         }
 
-    
+        public async Task<IActionResult> Summarize(int id)
+        {
+            // Fetch the actual article from your data source (replace with real implementation)
+            var article= _context.Articles.FirstOrDefault(a => a.Id == id);
+
+            string articleContent = article.Content;
+
+            if (string.IsNullOrEmpty(articleContent))
+            {
+                return NotFound("Article not found.");
+            }
+
+            // ✅ No need to create a new client every time - Use the global one
+            var batchInput = new List<string> { articleContent };
+            var actions = new TextAnalyticsActions()
+            {
+                ExtractiveSummarizeActions = new List<ExtractiveSummarizeAction>
+                {
+                    new ExtractiveSummarizeAction() { MaxSentenceCount = 5 }
+                }
+            };
+
+            // Call Text Analytics API
+            AnalyzeActionsOperation operation = await textAnalyticsClient.StartAnalyzeActionsAsync(batchInput, actions);
+            await operation.WaitForCompletionAsync();
+
+            List<string> summarySentences = new List<string>();
+
+            await foreach (AnalyzeActionsResult documentsInPage in operation.Value)
+            {
+                foreach (ExtractiveSummarizeActionResult summaryActionResults in documentsInPage.ExtractiveSummarizeResults)
+                {
+                    if (!summaryActionResults.HasError)
+                    {
+                        foreach (ExtractiveSummarizeResult documentResults in summaryActionResults.DocumentsResults)
+                        {
+                            if (!documentResults.HasError)
+                            {
+                                foreach (ExtractiveSummarySentence sentence in documentResults.Sentences)
+                                {
+                                    summarySentences.Add(sentence.Text);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Send summary sentences to the view
+            ViewBag.SummarySentences = summarySentences;
+            return View();
+        }
+
+
     }
 }
