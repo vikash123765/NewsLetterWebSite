@@ -13,6 +13,8 @@ using NewsLetterBanan.Models;
 using Newtonsoft.Json.Linq;
 using Azure;
 using Azure.AI.TextAnalytics;
+using Azure.AI.OpenAI;
+using OpenAI.Images;
 
 namespace NewsLetterBanan.Controllers
 {
@@ -568,7 +570,39 @@ namespace NewsLetterBanan.Controllers
             ViewBag.SummarySentences = summarySentences;
             return View();
         }
+       
+        [HttpPost]
+        public async Task<IActionResult> GenerateImage(string prompt)
+        {
+            string endpoint = "https://gr2409openai.openai.azure.com/";
+            string key = "8dDGgCGBiwQAfLjRUHTK63ai0fZO9WDJzIr1uOrzeC2abbO6M5uoJQQJ99BCACYeBjFXJ3w3AAABACOGtcmi";
+            // Create the OpenAI client using AzureKeyCredential
+            AzureOpenAIClient openAIClient = new AzureOpenAIClient(new Uri(endpoint), new AzureKeyCredential(key));
 
+            // This must match the custom deployment name you chose for your model
+            ImageClient chatClient = openAIClient.GetImageClient("dall-e-3");
+
+            var imageGeneration = await chatClient.GenerateImageAsync(
+                    prompt,
+                    new ImageGenerationOptions()
+                    {
+                        Size = GeneratedImageSize.W1024xH1024
+                    }
+                );
+
+
+            string imageUrl = imageGeneration.Value.ImageUri.ToString();
+
+            // Return the view with the image URL as the model
+            return Json(new { imageUrl });
+        }
+
+        // For GET: display the form
+        [HttpGet]
+        public IActionResult GenerateImageForm()
+        {
+            return View();
+        }
 
     }
 }

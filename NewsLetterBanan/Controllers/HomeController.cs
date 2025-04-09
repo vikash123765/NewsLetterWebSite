@@ -94,6 +94,11 @@ namespace NewsLetterBanan.Controllers
             return View(viewModel);
         }
 
+        public IActionResult TextToImage()
+        {
+            return View("TextToImage"); // This would return the view from Views/Shared/TextToImage.cshtml
+        }
+
 
         public async Task<IActionResult> LoadElectricityComponent()
         {
