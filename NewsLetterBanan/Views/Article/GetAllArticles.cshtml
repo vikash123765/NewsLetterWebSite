@@ -171,6 +171,8 @@
                     </select>
                     <button type="submit">Translate</button>
                 </form>
+
+                <a href="@Url.Action("Summarize", "Article", new { id = item.Id })" class="btn btn-success btn-sm mt-2">Summarize Article</a>
                 <!-- Content Summary -->
                 <p class="card-text small mt-2"><strong>Content Summary:</strong> @item.ContentSummary</p>
                 <!-- Category -->

@@ -112,6 +112,8 @@
                                         <button type="submit">Translate</button>
                                     </form>
 
+                                    <a href="@Url.Action("Summarize", "Article", new { id = item.Id })" class="btn btn-success btn-sm mt-2">Summarize Article</a>
+
                                     <p class="mt-2 small"><strong>By:</strong> @(item.User != null ? $"{item.User.FirstName} {item.User.LastName}" : "Unknown Author")</p>
                                     <p class="small"><strong>Category:</strong> @(item.Categories?.Count > 0 ? string.Join(", ", item.Categories.Select(c => c.Name)) : "No Category")</p>
                                     <p class="small"><strong>Tags:</strong> @(item.Tags?.Count > 0 ? string.Join(", ", item.Tags.Select(t => t.TagName)) : "No Tags")</p>
@@ -248,6 +250,8 @@
                                         </select>
                                         <button type="submit">Translate</button>
                                     </form>
+                                    
+                                     <a href="@Url.Action("Summarize", "Article", new { id = item.Id })" class="btn btn-success btn-sm mt-2">Summarize Article</a>
 
                                     <p class="mt-2 small"><strong>By:</strong> @(item.User != null ? $"{item.User.FirstName} {item.User.LastName}" : "Unknown Author")</p>
                                     <p class="small"><strong>Category:</strong> @(item.Categories?.Count > 0 ? string.Join(", ", item.Categories.Select(c => c.Name)) : "No Category")</p>
@@ -387,7 +391,8 @@
                                         </select>
                                         <button type="submit">Translate</button>
                                     </form>
-
+                                     
+                                     <a href="@Url.Action("Summarize", "Article", new { id = item.Id })" class="btn btn-success btn-sm mt-2">Summarize Article</a>
                                     <p class="mt-2 small"><strong>By:</strong> @(item.User != null ? $"{item.User.FirstName} {item.User.LastName}" : "Unknown Author")</p>
                                     <p class="small"><strong>Category:</strong> @(item.Categories?.Count > 0 ? string.Join(", ", item.Categories.Select(c => c.Name)) : "No Category")</p>
                                     <p class="small"><strong>Tags:</strong> @(item.Tags?.Count > 0 ? string.Join(", ", item.Tags.Select(t => t.TagName)) : "No Tags")</p>

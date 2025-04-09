@@ -93,7 +93,8 @@
                 </select>
                 <button type="submit">Translate</button>
             </form>
-
+           
+            <a href="@Url.Action("Summarize", "Article", new { id = @Model.Id })" class="btn btn-success btn-sm mt-2">Summarize Article</a>
             <!-- Content Summary -->
             <p class="card-text small"><strong>Content Summary:</strong> @Model.ContentSummary</p>
             <!-- Category -->
