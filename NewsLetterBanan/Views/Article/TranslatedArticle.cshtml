@@ -46,9 +46,9 @@
             currentAudio = null;
         }
 
-        let url = `/Article/SpeakArticle?id=${articleId}&source=${source}&content=${encodeURIComponent(content)}`;
+       // let url = `/Article/SpeakArticle?id=${articleId}&source=${source}&content=${encodeURIComponent(content)}`;
 
-        currentAudio = new Audio(url);
+        currentAudio = new Audio(window.location.origin + `/Article/SpeakArticle?id=${articleId}&source=${source}&content=${encodeURIComponent(content)}`);
 
         currentAudio.oncanplaythrough = function () {
             spinner.style.display = "none";
