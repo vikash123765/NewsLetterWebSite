@@ -162,7 +162,7 @@ namespace NewsLetterBanan.Controllers
                     break;
             }
 
-            // Debugging: Log the sorted query
+            // Debugging: Log the sorted queryy
             var sortedQuery = query.ToList();
             Console.WriteLine("Sorted Query: " + string.Join(", ", sortedQuery.Select(a => a.Headline)));
 
