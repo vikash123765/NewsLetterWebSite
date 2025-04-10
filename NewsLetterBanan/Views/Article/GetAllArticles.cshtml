@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Mvc.Rendering
+﻿﻿@using Microsoft.AspNetCore.Mvc.Rendering
 @model IEnumerable<NewsLetterBanan.Data.Article>
 
 @{
@@ -544,7 +544,7 @@
                     return; // Let server handle redirection
                 }
                 event.preventDefault();
-               
+
 
                 // Save open comment and reply states before reload
                 document.querySelectorAll('.toggle-comments').forEach(button => {
