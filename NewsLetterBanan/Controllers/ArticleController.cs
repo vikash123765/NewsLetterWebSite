@@ -408,53 +408,61 @@ namespace NewsLetterBanan.Controllers
         }
 
 
-        public async Task<IActionResult> SpeakArticle(int id, string source)
+        public async Task<IActionResult> SpeakArticle(int id, string source, string? content)
         {
-            var article = _articleService.GetArticleById(id); // Fetch the article from the database
-            if (article == null || string.IsNullOrWhiteSpace(article.Content))
+            try
             {
-                return NotFound("Article not found or has no content.");
-            }
-
-            string contentToRead = article.Content;
-            if (source == "home" || source == "myPage")
-            {
-                contentToRead = article.Content.Length > 200 ? article.Content.Substring(0, 200) + "..." : article.Content;
-            }
-            else if (source == "getAllArticles")
-            {
-                contentToRead = article.Content.Length > 300 ? article.Content.Substring(0, 300) + "..." : article.Content;
-
-            }
-            else if (source == "viewArticle")
-            {
-                contentToRead = article.Content; // Full content
-            }
-            else
-            {
-                contentToRead = article.Content;
-            }
-
-
-            var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
-            speechConfig.SpeechSynthesisVoiceName = "en-US-AvaMultilingualNeural";
-
-            using (var synthesizer = new SpeechSynthesizer(speechConfig, null))
-            {
-                using (var result = await synthesizer.SpeakTextAsync(contentToRead))
+                var article = _articleService.GetArticleById(id); // Fetch the article from the database
+                if (article == null || string.IsNullOrWhiteSpace(article.Content))
                 {
-                    if (result.Reason == ResultReason.SynthesizingAudioCompleted)
+                    return NotFound("Article not found or has no content.");
+                }
+
+                string contentToRead = article.Content;
+                if (source == "home" || source == "myPage")
+                {
+                    contentToRead = article.Content.Length > 200 ? article.Content.Substring(0, 200) + "..." : article.Content;
+                }
+                else if (source == "getAllArticles")
+                {
+                    contentToRead = article.Content.Length > 300 ? article.Content.Substring(0, 300) + "..." : article.Content;
+                }
+                else if (source == "viewArticle")
+                {
+                    contentToRead = article.Content; // Full content
+                }
+                else if (source == "TranslatedArticle" && !string.IsNullOrWhiteSpace(content))
+                {
+                    contentToRead = content; // Full content
+                }
+
+                var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
+                speechConfig.SpeechSynthesisVoiceName = "en-US-AvaMultilingualNeural";
+
+                using (var synthesizer = new SpeechSynthesizer(speechConfig, null))
+                {
+                    using (var result = await synthesizer.SpeakTextAsync(contentToRead))
                     {
-                        var audioStream = new MemoryStream(result.AudioData);
-                        return File(audioStream, "audio/wav");
-                    }
-                    else
-                    {
-                        return BadRequest("Failed to synthesize speech.");
+                        if (result.Reason == ResultReason.SynthesizingAudioCompleted)
+                        {
+                            var audioStream = new MemoryStream(result.AudioData);
+                            return File(audioStream, "audio/wav");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Speech synthesis failed.");
+                            return BadRequest("Failed to synthesize speech.");
+                        }
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in SpeakArticle: {ex.Message}");
+                return StatusCode(500, "Internal Server Error.");
+            }
         }
+
 
         [HttpPost]
         public async Task<IActionResult> TranslateArticle(int id, string language)
@@ -488,6 +496,7 @@ namespace NewsLetterBanan.Controllers
                 HttpContext.Session.SetString("TranslatedText", translatedText);
                 HttpContext.Session.SetString("ArticleName", article.Headline ?? "Unknown Article");
                 HttpContext.Session.SetString("TargetLanguage", language ?? "Unknown Language");
+                HttpContext.Session.SetInt32("ArticleId", id);
 
                 // Verify that session variables are actually stored
                 if (HttpContext.Session.GetString("TranslatedText") == null)
@@ -509,13 +518,15 @@ namespace NewsLetterBanan.Controllers
 
             string articleName = HttpContext.Session.GetString("ArticleName") ?? "Unknown Article";
             string targetLanguage = HttpContext.Session.GetString("TargetLanguage") ?? "Unknown Language";
+            int? articleId = HttpContext.Session.GetInt32("ArticleId"); // Get stored Article ID ✅
 
             // 🛑 Clear session variables to avoid reloading issues
             HttpContext.Session.Remove("TranslatedText");
             HttpContext.Session.Remove("ArticleName");
             HttpContext.Session.Remove("TargetLanguage");
+            HttpContext.Session.Remove("ArticleId");
 
-            return View("TranslatedArticle", new Tuple<string, string, string>(translatedText, articleName, targetLanguage));
+            return View("TranslatedArticle", new Tuple<string, string, string, int>(translatedText, articleName, targetLanguage, articleId ?? 0));
         }
 
         public async Task<IActionResult> Summarize(int id)
@@ -568,6 +579,7 @@ namespace NewsLetterBanan.Controllers
 
             // Send summary sentences to the view
             ViewBag.SummarySentences = summarySentences;
+            
             return View();
         }
        
