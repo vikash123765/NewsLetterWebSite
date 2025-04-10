@@ -407,7 +407,7 @@ namespace NewsLetterBanan.Controllers
             return View(article); // Pass the article to the view
         }
 
-        [HttpGet]
+        [HttpGet("/Article/SpeakArticle")]
         public async Task<IActionResult> SpeakArticle(int id, string source, string? content)
         {
             try
