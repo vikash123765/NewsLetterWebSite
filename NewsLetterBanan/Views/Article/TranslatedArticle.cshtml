@@ -1,5 +1,4 @@
-﻿@model Tuple<string, string, string>
-
+﻿@model Tuple<string, string, string, int>
 <div class="container mt-5">
     <h2 class="text-center mb-4">Translated Text</h2>
 
@@ -13,9 +12,67 @@
             <h5 class="card-title">Translated Content</h5>
             <p class="card-text">@Model.Item1</p> <!-- Displaying translated text -->
         </div>
+
+
     </div>
+
+    <p class="card-text">
+        <button onclick="speakArticle(@Model.Item4, 'TranslatedArticle', `@Model.Item1.Replace("'", "\\'").Replace("\"", "\\\"")`, this)">🔊</button>
+
+
+        <button class="cancel-btn btn btn-danger btn-sm" style="display: none;" onclick="cancelSpeech(this)">X</button>
+        <span class="spinner spinner-border spinner-border-sm" style="display: none;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </span>
+    </p>
 
     <div class="mt-4 text-center">
         <a href="@Context.Request.Headers["Referer"]" class="btn btn-primary">Back to Articles/Article</a>
     </div>
 </div>
+
+<script>
+       let currentAudio = null;
+
+    function speakArticle(articleId, source,content, button) {
+        var spinner = button.nextElementSibling.nextElementSibling;
+        var cancelButton = button.nextElementSibling;
+
+        button.disabled = true;
+        spinner.style.display = "inline-block";
+        cancelButton.style.display = "inline-block";
+
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio = null;
+        }
+
+        currentAudio = new Audio(`/Article/SpeakArticle?id=${articleId}&source=${source}&content=${encodeURIComponent(content)}`);
+
+
+        currentAudio.oncanplaythrough = function () {
+            spinner.style.display = "none";
+            button.disabled = false;
+            currentAudio.play();
+        };
+
+        currentAudio.onended = function () {
+            cancelButton.style.display = "none";
+        };
+
+        currentAudio.onerror = function () {
+            spinner.style.display = "none";
+            button.disabled = false;
+            cancelButton.style.display = "none";
+            alert("Error loading audio.");
+        };
+    }
+
+    function cancelSpeech(button) {
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio = null;
+        }
+        button.style.display = "none";
+    }
+</script>

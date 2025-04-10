@@ -24,13 +24,14 @@
 
 <style>
     /* Updated modal styles */
+   /* Modal styles */
     #resultContainer {
-        display: none;
+        display: none; /* Keeps modal hidden until triggered */
         position: fixed;
         top: 0;
         left: 0;
-        width: 100%;  /* Full width */
-        height: 100%; /* Full height */
+        width: 100%;
+        height: 100%;
         background: rgba(0, 0, 0, 0.7);
         justify-content: center;
         align-items: center;
@@ -42,78 +43,79 @@
         padding: 20px;
         border-radius: 8px;
         text-align: center;
-        max-width: 50%;  /* Control width of content */
-        margin: 0 auto;  /* Center horizontally */
-        position: relative;
-        top: 50%;  /* Vertical centering */
-        transform: translateY(-50%);
+        max-width: 80%;
+        max-height: 90vh; /* Prevents content from going out of screen */
+        overflow-y: auto; /* Enables scrolling if content is too big */
+        word-wrap: break-word; /* Prevents text from overflowing */
+        white-space: normal; /* Ensures text wraps properly */
     }
 
-    #resultContent img {
-        max-width: 100%;
-        max-height: 50vh; /* Prevent image from being too tall */
-        height: auto;
-        display: block;
-        margin: 0 auto;
-    }
+
+        #resultContent img {
+            max-width: 100%;
+            max-height: 70vh; /* Prevent image from being too tall */
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
 </style>
 
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const imageForm = document.getElementById('imageForm');
-            const generateBtn = imageForm.querySelector('button[type="submit"]');
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const imageForm = document.getElementById('imageForm');
+                const generateBtn = imageForm.querySelector('button[type="submit"]');
 
-            imageForm.addEventListener('submit', async function (event) {
-                event.preventDefault();
+                imageForm.addEventListener('submit', async function (event) {
+                    event.preventDefault();
 
-                try {
-                    // Show loading state
-                    generateBtn.disabled = true;
-                    generateBtn.innerHTML = `
-                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                Generating...
-                            `;
+                    try {
+                        // Show loading state
+                        generateBtn.disabled = true;
+                        generateBtn.innerHTML = `
+                                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                            Generating...
+                                        `;
 
-                    const formData = new FormData(imageForm);
-                    const response = await fetch(imageForm.action, {
-                        method: 'POST',
-                        body: formData,
-                        headers: { "X-Requested-With": "XMLHttpRequest" }
-                    });
+                        const formData = new FormData(imageForm);
+                        const response = await fetch(imageForm.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: { "X-Requested-With": "XMLHttpRequest" }
+                        });
 
-                    if (!response.ok) throw new Error("Network error");
+                        if (!response.ok) throw new Error("Network error");
 
-                    const result = await response.json();
+                        const result = await response.json();
 
-                    if (result.imageUrl?.trim()) {
-                        document.getElementById('generatedImage').src = result.imageUrl;
-                        document.getElementById('imageUrlText').innerHTML =
-                            `<a href="${result.imageUrl}" target="_blank">${result.imageUrl}</a>`;
-                        document.getElementById('resultContainer').style.display = "flex";
-                    } else {
-                        alert("No image generated");
+                        if (result.imageUrl?.trim()) {
+                            document.getElementById('generatedImage').src = result.imageUrl;
+                            document.getElementById('imageUrlText').innerHTML =
+                                `<a href="${result.imageUrl}" target="_blank">${result.imageUrl}</a>`;
+                            document.getElementById('resultContainer').style.display = "flex";
+                        } else {
+                            alert("No image generated");
+                        }
+                    } catch (error) {
+                        console.error("Error:", error);
+                        alert("Image generation failed");
+                    } finally {
+                        // Reset loading state
+                        generateBtn.disabled = false;
+                        generateBtn.innerHTML = 'Generate Image';
                     }
-                } catch (error) {
-                    console.error("Error:", error);
-                    alert("Image generation failed");
-                } finally {
-                    // Reset loading state
-                    generateBtn.disabled = false;
-                    generateBtn.innerHTML = 'Generate Image';
-                }
-            });
+                });
 
-            // Close handlers
-            document.getElementById('closeResult').addEventListener('click', () => {
-                document.getElementById('resultContainer').style.display = "none";
-            });
+                // Close handlers
+                document.getElementById('closeResult').addEventListener('click', () => {
+                    document.getElementById('resultContainer').style.display = "none";
+                });
 
-            document.getElementById('resultContainer').addEventListener('click', (e) => {
-                if (e.target === e.currentTarget) e.currentTarget.style.display = "none";
+                document.getElementById('resultContainer').addEventListener('click', (e) => {
+                    if (e.target === e.currentTarget) e.currentTarget.style.display = "none";
+                });
             });
-        });
-    </script>
+        </script>
 }
