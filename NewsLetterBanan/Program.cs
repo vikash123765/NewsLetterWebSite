@@ -34,6 +34,8 @@ namespace NewsLetterBanan
         options.LoginPath = "/Account/Login"; // Define the login path for unauthenticated users
     });
 
+
+
             builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()

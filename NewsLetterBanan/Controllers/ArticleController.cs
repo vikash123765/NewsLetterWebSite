@@ -413,13 +413,27 @@ namespace NewsLetterBanan.Controllers
             try
             {
                 var article = _articleService.GetArticleById(id); // Fetch the article from the database
+
+                string contentToRead;
+              
                 if (article == null || string.IsNullOrWhiteSpace(article.Content))
                 {
                     return NotFound("Article not found or has no content.");
                 }
-
-                string contentToRead = article.Content;
-                if (source == "home" || source == "myPage")
+                else if (source == "TranslatedArticle" && !string.IsNullOrWhiteSpace(content))
+                {
+                    if (content.Length > 8000) // Azure Cognitive Services limit
+                    {
+                        contentToRead = System.Web.HttpUtility.UrlDecode(content.Substring(0, 8000));
+                      
+                    }
+                    else
+                    {
+                        contentToRead = System.Web.HttpUtility.UrlDecode(content);
+                    }
+                }
+               
+                else if (source == "home" || source == "myPage")
                 {
                     contentToRead = article.Content.Length > 200 ? article.Content.Substring(0, 200) + "..." : article.Content;
                 }
@@ -431,9 +445,9 @@ namespace NewsLetterBanan.Controllers
                 {
                     contentToRead = article.Content; // Full content
                 }
-                else if (source == "TranslatedArticle" && !string.IsNullOrWhiteSpace(content))
+                else 
                 {
-                    contentToRead = content; // Full content
+                    contentToRead = article.Content;
                 }
 
                 var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
