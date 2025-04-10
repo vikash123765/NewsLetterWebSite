@@ -407,47 +407,40 @@ namespace NewsLetterBanan.Controllers
             return View(article); // Pass the article to the view
         }
 
-        [HttpGet("/Article/SpeakArticle")]
-        public async Task<IActionResult> SpeakArticle(int id, string source, string? content)
+        [HttpPost("/Article/SpeakArticle")]
+        public async Task<IActionResult> SpeakArticle([FromBody] SpeakArticleRequest request)
         {
             try
             {
-                var article = _articleService.GetArticleById(id); // Fetch the article from the database
-
                 string contentToRead;
-              
-                if (article == null || string.IsNullOrWhiteSpace(article.Content))
+
+                // Handle translated content (comes directly from request)
+                if (request.Source == "TranslatedArticle" && !string.IsNullOrWhiteSpace(request.Content))
                 {
-                    return NotFound("Article not found or has no content.");
+                    contentToRead = request.Content.Length > 8000
+                        ? request.Content.Substring(0, 8000)
+                        : request.Content;
                 }
-                else if (source == "TranslatedArticle" && !string.IsNullOrWhiteSpace(content))
+                else
                 {
-                    if (content.Length > 8000) // Azure Cognitive Services limit
+                    // For non-translated content, fetch from database
+                    var article = _articleService.GetArticleById(request.Id);
+                    if (article == null || string.IsNullOrWhiteSpace(article.Content))
                     {
-                        contentToRead = System.Web.HttpUtility.UrlDecode(content.Substring(0, 8000));
-                      
+                        return NotFound("Article not found or has no content.");
                     }
-                    else
+
+                    contentToRead = request.Source switch
                     {
-                        contentToRead = System.Web.HttpUtility.UrlDecode(content);
-                    }
-                }
-               
-                else if (source == "home" || source == "myPage")
-                {
-                    contentToRead = article.Content.Length > 200 ? article.Content.Substring(0, 200) + "..." : article.Content;
-                }
-                else if (source == "getAllArticles")
-                {
-                    contentToRead = article.Content.Length > 300 ? article.Content.Substring(0, 300) + "..." : article.Content;
-                }
-                else if (source == "viewArticle")
-                {
-                    contentToRead = article.Content; // Full content
-                }
-                else 
-                {
-                    contentToRead = article.Content;
+                        "home" or "myPage" => article.Content.Length > 200
+                            ? article.Content.Substring(0, 200) + "..."
+                            : article.Content,
+                        "getAllArticles" => article.Content.Length > 300
+                            ? article.Content.Substring(0, 300) + "..."
+                            : article.Content,
+                        "viewArticle" => article.Content,
+                        _ => article.Content
+                    };
                 }
 
                 var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
@@ -459,14 +452,9 @@ namespace NewsLetterBanan.Controllers
                     {
                         if (result.Reason == ResultReason.SynthesizingAudioCompleted)
                         {
-                            var audioStream = new MemoryStream(result.AudioData);
-                            return File(audioStream, "audio/wav");
+                            return File(result.AudioData, "audio/wav");
                         }
-                        else
-                        {
-                            Console.WriteLine("Speech synthesis failed.");
-                            return BadRequest("Failed to synthesize speech.");
-                        }
+                        return BadRequest("Failed to synthesize speech.");
                     }
                 }
             }
@@ -477,6 +465,12 @@ namespace NewsLetterBanan.Controllers
             }
         }
 
+        public class SpeakArticleRequest
+        {
+            public int Id { get; set; }
+            public string? Source { get; set; }
+            public string? Content { get; set; }
+        }
 
         [HttpPost]
         public async Task<IActionResult> TranslateArticle(int id, string language)

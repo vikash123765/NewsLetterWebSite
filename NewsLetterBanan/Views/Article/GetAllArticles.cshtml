@@ -620,9 +620,9 @@
     });
     let currentAudio = null;
 
-    function speakArticle(articleId, source, button) {
-        var spinner = button.nextElementSibling.nextElementSibling;
-        var cancelButton = button.nextElementSibling;
+    async function speakArticle(articleId, source, button) {
+        const spinner = button.nextElementSibling.nextElementSibling;
+        const cancelButton = button.nextElementSibling;
 
         button.disabled = true;
         spinner.style.display = "inline-block";
@@ -633,24 +633,49 @@
             currentAudio = null;
         }
 
-        currentAudio = new Audio(`/Article/SpeakArticle?id=${articleId}&source=${source}`);
+        try {
+            const response = await fetch('/Article/SpeakArticle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'audio/wav'
+                },
+                body: JSON.stringify({
+                    id: articleId,
+                    source: source
+                })
+            });
 
-        currentAudio.oncanplaythrough = function () {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const blob = await response.blob();
+            currentAudio = new Audio(URL.createObjectURL(blob));
+
+            currentAudio.oncanplaythrough = function () {
+                spinner.style.display = "none";
+                button.disabled = false;
+                currentAudio.play();
+            };
+
+            currentAudio.onended = function () {
+                cancelButton.style.display = "none";
+            };
+
+            currentAudio.onerror = function () {
+                spinner.style.display = "none";
+                button.disabled = false;
+                cancelButton.style.display = "none";
+                alert("Error playing audio.");
+            };
+        } catch (error) {
+            console.error('Error:', error);
             spinner.style.display = "none";
             button.disabled = false;
-            currentAudio.play();
-        };
-
-        currentAudio.onended = function () {
             cancelButton.style.display = "none";
-        };
-
-        currentAudio.onerror = function () {
-            spinner.style.display = "none";
-            button.disabled = false;
-            cancelButton.style.display = "none";
-            alert("Error loading audio.");
-        };
+            alert("Failed to generate speech. Please try again.");
+        }
     }
 
     function cancelSpeech(button) {
@@ -660,7 +685,6 @@
         }
         button.style.display = "none";
     }
-
 </script>
 
 
