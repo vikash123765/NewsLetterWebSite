@@ -40,6 +40,14 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="TextToImage">Text to image</a>
                         </li>
 
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Chat" asp-action="AdminChatWithHistory">Admin Chatbot</a>
+                            </li>
+                        }
+
+
 
 
                         @if (User.IsInRole("RegUser"))
