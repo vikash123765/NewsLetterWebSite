@@ -500,7 +500,6 @@ namespace NewsLetterBanan.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("ReceiverId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("SenderId")
@@ -1019,8 +1018,7 @@ namespace NewsLetterBanan.Migrations
                     b.HasOne("NewsLetterBanan.Data.User", "Receiver")
                         .WithMany("ReceivedMessages")
                         .HasForeignKey("ReceiverId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("NewsLetterBanan.Data.User", "Sender")
                         .WithMany("SentMessages")

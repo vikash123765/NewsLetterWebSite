@@ -26,8 +26,9 @@ namespace NewsLetterBanan.Data
         public virtual User Sender { get; set; }
 
         // ✅ Explicitly define foreign key for Receiver
-        [Required]
-        public string ReceiverId { get; set; } = string.Empty;
+
+        public string? ReceiverId { get; set; }
+
 
         [ForeignKey(nameof(ReceiverId))]
         public virtual User Receiver { get; set; }
