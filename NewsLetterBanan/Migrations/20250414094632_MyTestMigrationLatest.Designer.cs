@@ -12,8 +12,8 @@ using NewsLetterBanan.Data;
 namespace NewsLetterBanan.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250302100302_UpdateDeleteBehavior")]
-    partial class UpdateDeleteBehavior
+    [Migration("20250414094632_MyTestMigrationLatest")]
+    partial class MyTestMigrationLatest
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -503,7 +503,6 @@ namespace NewsLetterBanan.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("ReceiverId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("SenderId")
@@ -1022,8 +1021,7 @@ namespace NewsLetterBanan.Migrations
                     b.HasOne("NewsLetterBanan.Data.User", "Receiver")
                         .WithMany("ReceivedMessages")
                         .HasForeignKey("ReceiverId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("NewsLetterBanan.Data.User", "Sender")
                         .WithMany("SentMessages")

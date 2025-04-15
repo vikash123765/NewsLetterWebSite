@@ -59,6 +59,34 @@ namespace NewsLetterBanan.Controllers
             chat.UserMessage = "";
             return View(chat);
         }
+
+        // ✅ NEW ADMIN CHAT FUNCTIONALITY (Protected by Role)
+       
+        public IActionResult AdminChatWithHistory()
+        {
+            ChatVM chat = new ChatVM();
+            chat.ChatHistory = HttpContext.Session.Get<List<(string, string)>>("AdminChat") ?? new List<(string, string)>();
+            HttpContext.Session.Set("AdminChat", chat.ChatHistory);
+
+            chat.UserMessage = string.Empty;
+            return View(chat);
+        }
+
+        [HttpPost]
+        public IActionResult AdminChatWithHistory(ChatVM chat)
+        {
+            chat.ChatHistory = HttpContext.Session.Get<List<(string, string)>>("AdminChat") ?? new List<(string, string)>();
+
+            chat.ChatHistory.Add(("Admin", chat.UserMessage));
+
+            // Admin-specific AI response (Handles SQL queries dynamically)
+            var response = _chatService.AdminChatResponse(chat.ChatHistory);
+            chat.ChatHistory.Add(("Database AI", response.Result));
+
+            HttpContext.Session.Set("AdminChat", chat.ChatHistory);
+            chat.UserMessage = "";
+            return View(chat);
+        }
         public IActionResult Privacy()
         {
             return View();

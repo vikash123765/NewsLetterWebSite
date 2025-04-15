@@ -156,7 +156,7 @@ namespace NewsLetterBanan.Data
                 .HasOne(m => m.Receiver)
                 .WithMany(u => u.ReceivedMessages)
                 .HasForeignKey(m => m.ReceiverId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.SetNull);
 
             // ✅ Define Inbox Relationships
             modelBuilder.Entity<Inbox>()
