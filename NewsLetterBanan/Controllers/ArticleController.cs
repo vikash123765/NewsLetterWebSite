@@ -28,7 +28,7 @@ namespace NewsLetterBanan.Controllers
         private readonly UserManager<User> _userManager;
       
         private readonly RoleManager<IdentityRole> _roleManager;
-        private static readonly string key = "RMYzPGNIROnY8yH39wv6jd3YBquqJ8FUcG4PtWoXHggke5O0yC1FJQQJ99BCACfhMk5XJ3w3AAAbACOGUVrS";
+        private static readonly string key = "D1Z7zwa1Xw6RNnEJ7EgqdT9PVhLvEnBaISmwdFtv14OAM8aiJUaXJQQJ99BCACfhMk5XJ3w3AAAbACOGKmbq";
         private static readonly string endpoint = "https://api.cognitive.microsofttranslator.com";
         private static readonly string location = "swedencentral";
         // This example requires environment variables named "LANGUAGE_KEY" and "LANGUAGE_ENDPOINT"
