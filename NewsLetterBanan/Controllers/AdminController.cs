@@ -307,7 +307,18 @@ namespace NewsLetterBanan.Controllers
         public async Task<IActionResult> ManageUsers()
         {
             var users = await _context.Users.ToListAsync();
+            // Create dictionary to hold roles for each user
+            var userRolesDict = new Dictionary<string, List<string>>();
+
+            foreach (var user in users)
+            {
+                var roles = await _userManager.GetRolesAsync(user);  
+                userRolesDict[user.Id] = roles.ToList();
+            }
+
+            ViewBag.UserRoles = userRolesDict;
             return View(users);
+          
         }
 
 
