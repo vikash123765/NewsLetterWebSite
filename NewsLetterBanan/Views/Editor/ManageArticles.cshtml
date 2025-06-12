@@ -9,6 +9,7 @@
             <table class="table table-striped table-bordered">
                 <thead class="thead-dark">
                     <tr>
+                        <th>Roles</th>
                         <th>Author</th>
                         <th>Title</th>
                         <th>Published Date</th>
@@ -22,6 +23,13 @@
                     @foreach (var article in Model)
                     {
                         <tr>
+                            <td>
+                                @{
+                                    var userRoles = (Dictionary<string, List<string>>)ViewBag.UserRoles;
+                                    var rolesForUser = userRoles.ContainsKey(article.User.Id) ? userRoles[article.User.Id] : new List<string>();
+                                }
+                                @string.Join(", ", rolesForUser)
+                            </td>
                             <td>@(article.User != null ? $"{article.User.FirstName} {article.User.LastName}" : "Unknown")</td>
                             <td>@article.Headline</td>
                             <td>@article.DateStamp.ToString("g")</td>
@@ -65,7 +73,8 @@
     </div>
 
     <a class="btn btn-success mt-3" href="/Editor/CreateArticle">Create New Article</a>
-    <br />
+    <br/>
+    <br/>
     <a class="btn btn-info mb-3" href="/Editor/ManageComments">Manage Comments and Replies</a>
 
     @if (TempData["SuccessMessage"] != null)
