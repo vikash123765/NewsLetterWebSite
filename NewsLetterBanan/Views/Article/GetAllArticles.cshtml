@@ -7,7 +7,7 @@
     var categories = ViewBag.Categories as List<NewsLetterBanan.Data.Category>;
 }<!-- Filter Section -->
 <div class="container-fluid my-4">
-    <form method="get" asp-action="GetAllArticles" asp-controller="Article" class="p-4 bg-light rounded shadow">
+    <form method="get" asp-action="GetAllArticles" asp-controller="Article" class="p-4 bg-light rounded shadow" id="filter-form">
         <div class="row g-3 align-items-end">
 
             <!-- Category Dropdown -->
@@ -538,8 +538,9 @@
         });
 
         // Prevent scrolling manipulation and reload instantly after form submission
-        document.querySelectorAll("form").forEach(form => {
-            form.addEventListener("submit", function (event) {
+      document.querySelectorAll("form:not(#filter-form)").forEach(form => {
+
+       form.addEventListener("submit", function (event) {
                 if (this.action.includes("TranslateArticle")) {
                     return; // Let server handle redirection
                 }
