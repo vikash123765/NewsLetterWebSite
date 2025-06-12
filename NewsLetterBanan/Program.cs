@@ -46,7 +46,8 @@ namespace NewsLetterBanan
             builder.Services.AddScoped<IRequestService, RequestService>();
             builder.Services.AddTransient<IEmailSender, EmailSender>();
             builder.Services.AddScoped<IJournalistService, JournalistService>();
-          
+           
+
 
             builder.Services.AddHttpClient<RequestService>();
             builder.Services.AddHttpClient(); // Register HttpClientFactory

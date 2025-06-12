@@ -26,6 +26,8 @@ namespace NewsLetterBanan.Models.Helper
             {
                 try
                 {
+                    // 🔐 Disable SSL certificate validation (DEV ONLY!)
+                    emailClient.ServerCertificateValidationCallback = (s, c, h, e) => true;
                     emailClient.Connect(_configuration["SmtpServer"], Convert.ToInt32(_configuration["SmtpPort"]), true);
                 }
                 catch (SmtpCommandException ex)
