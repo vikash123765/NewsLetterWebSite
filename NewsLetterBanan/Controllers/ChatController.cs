@@ -31,6 +31,8 @@ namespace NewsLetterBanan.Controllers
             chatVM.Response = response;
             return View(chatVM);
         }
+
+        //
         public IActionResult ChatWithHistory()
         {
             ChatVM chat = new ChatVM();
