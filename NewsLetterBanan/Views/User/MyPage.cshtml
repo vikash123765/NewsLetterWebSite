@@ -365,7 +365,7 @@
                                             <span class="visually-hidden">Loading...</span>
                                         </span>
                                     </p>
-                                    <a href="@Url.Action("ViewArticle", "Article", new { id = item.Id })" class="btn btn-success btn-sm">Read More</a>very
+                                    <a href="@Url.Action("ViewArticle", "Article", new { id = item.Id })" class="btn btn-success btn-sm">Read More</a>
                                     <form method="post" asp-controller="Article" asp-action="TranslateArticle">
                                         <input type="hidden" name="id" value="@item.Id" />
                                         <select name="language">
