@@ -35,7 +35,10 @@ namespace NewsLetterBanan.Data
                 new SubscriptionType { Id = 3, TypeName = "World", Description = "Global news and updates", Price = 19.99 },
                 new SubscriptionType { Id = 4, TypeName = "Weather", Description = "Weather forecasts and updates", Price = 4.99 },
                 new SubscriptionType { Id = 5, TypeName = "Economy", Description = "Economic news and analysis", Price = 12.99 },
-                new SubscriptionType { Id = 6, TypeName = "Sport", Description = "Sport news and events", Price = 7.99 }
+                new SubscriptionType { Id = 6, TypeName = "Sport", Description = "Sport news and events", Price = 7.99 },
+                new SubscriptionType { Id = 7, TypeName = "Technology", Description = "Latest tech news and innovations", Price = 9.99 }
+
+
             );
 
             // One-to-Many: User → Subscriptions
